@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import { Mail, Heart, Gift, Gem, CheckCircle } from 'lucide-react';
+import { Mail, Heart, Gift, Gem, CheckCircle, CalendarDays, MapPin } from 'lucide-react';
 
 const questionsData = [
   {
@@ -58,6 +58,14 @@ const questionsData = [
     ],
   },
 ];
+
+// Datos de la boda que se muestran en la portada. Reemplaza los textos "por confirmar".
+const weddingDetails = {
+  date: 'Fecha por confirmar',
+  time: 'Hora por confirmar',
+  venue: 'Lugar por confirmar',
+  city: 'Ciudad por confirmar',
+};
 
 const TOTAL_QUESTIONS = questionsData.length;
 const RSVP_STEP = TOTAL_QUESTIONS + 1;
@@ -225,10 +233,29 @@ export default function WeddingInvitation() {
       <div className="flex flex-col items-center">
         <Mail className="text-rose-900 w-8 h-8 mb-4" aria-hidden="true" />
         <p className={topTextClass}>Reserva la fecha</p>
-        <h1 className="text-3xl font-serif text-center mb-8 text-stone-800">
+        <h1 className="text-3xl font-serif text-center mb-6 text-stone-800">
           ¿Quieres venir a mi boda? 💍
         </h1>
       </div>
+
+      <dl className="w-full flex flex-col gap-4 border-y border-stone-200 py-5 text-left">
+        <div className="flex items-start gap-3">
+          <CalendarDays className="w-5 h-5 mt-0.5 shrink-0 text-rose-900" aria-hidden="true" />
+          <div>
+            <dt className="sr-only">Fecha</dt>
+            <dd className="font-medium text-stone-800">{weddingDetails.date}</dd>
+            <dd className="text-sm text-stone-500">{weddingDetails.time}</dd>
+          </div>
+        </div>
+        <div className="flex items-start gap-3">
+          <MapPin className="w-5 h-5 mt-0.5 shrink-0 text-rose-900" aria-hidden="true" />
+          <div>
+            <dt className="sr-only">Lugar</dt>
+            <dd className="font-medium text-stone-800">{weddingDetails.venue}</dd>
+            <dd className="text-sm text-stone-500">{weddingDetails.city}</dd>
+          </div>
+        </div>
+      </dl>
 
       <div className="relative flex justify-center gap-4 w-full mt-8">
         <button
@@ -258,7 +285,7 @@ export default function WeddingInvitation() {
           <button
             ref={noButtonRef}
             type="button"
-            className="bg-white text-stone-700 border border-stone-300 px-8 py-3 rounded-xl font-medium absolute top-0 left-0 z-10"
+            className="bg-paper text-stone-700 border border-stone-300 px-8 py-3 rounded-xl font-medium absolute top-0 left-0 z-10"
             style={{
               transform: `translate(${noButtonPosition.x}px, ${noButtonPosition.y}px)`,
               transition: 'transform 0.2s ease-out',
@@ -275,7 +302,7 @@ export default function WeddingInvitation() {
   );
 
   const optionClass =
-    'w-full text-left p-4 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 transition-all text-stone-700 text-sm cursor-pointer';
+    'w-full text-left p-4 rounded-xl border border-stone-200 bg-paper hover:bg-stone-100 transition-all text-stone-700 text-sm cursor-pointer';
 
   const renderQuestion = () => {
     const { question, options, variants } = questionsData[step - 1];
@@ -304,7 +331,7 @@ export default function WeddingInvitation() {
                   aria-selected={item.id === variant.id}
                   className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors cursor-pointer ${
                     item.id === variant.id
-                      ? 'bg-white text-rose-900 shadow-sm'
+                      ? 'bg-paper text-rose-900 shadow-sm'
                       : 'text-stone-500 hover:text-stone-700'
                   }`}
                   onClick={() => selectVariant(item.id)}
@@ -351,11 +378,11 @@ export default function WeddingInvitation() {
     `flex-1 p-3 rounded-xl border text-sm font-medium transition-all cursor-pointer ${
       selected
         ? 'bg-rose-900 border-rose-900 text-white'
-        : 'bg-white border-stone-200 text-stone-700 hover:bg-stone-50'
+        : 'bg-paper border-stone-200 text-stone-700 hover:bg-stone-100'
     }`;
 
   const inputClass =
-    'w-full p-3 rounded-xl border border-stone-200 bg-white text-stone-700 text-sm focus:outline-none focus:ring-2 focus:ring-rose-200 focus:border-rose-300';
+    'w-full p-3 rounded-xl border border-stone-200 bg-paper text-stone-700 text-sm focus:outline-none focus:ring-2 focus:ring-rose-200 focus:border-rose-300';
 
   const renderRsvp = () => (
     <form className="flex flex-col items-center w-full" onSubmit={submitRsvp} noValidate>
@@ -504,7 +531,7 @@ export default function WeddingInvitation() {
       <div className="flex flex-col items-center w-full max-w-md">
         <div
           ref={cardRef}
-          className="bg-white rounded-3xl shadow-xl max-w-md w-full p-8 min-h-[450px] flex flex-col"
+          className="bg-paper rounded-3xl shadow-xl max-w-md w-full p-8 min-h-[450px] flex flex-col"
         >
           <div
             key={step}
