@@ -17,7 +17,7 @@ const HEADERS = [
   'P1: Emoción',
   'P2: Llorar',
   'P3: Regalo',
-  'P4: Vestido',
+  'P4: Atuendo',
 ];
 
 function doPost(e) {
