@@ -1,0 +1,232 @@
+# Guía de Agentes y Skills para el Proyecto Holtmont (AGENTS.md)
+
+Este documento define el contexto técnico, las reglas de negocio y las "skills" que los agentes de IA (y desarrolladores) deben utilizar al interactuar con el código base del sistema Holtmont. Al trabajar en este repositorio, debes adherirte estrictamente a estas pautas para evitar romper funcionalidades críticas.
+
+---
+
+## ⚠️ REGLA 0 — OBLIGATORIA PARA TODO AGENTE (leer antes que nada)
+
+> **Todo agente de IA (Claude, Codex, Cursor, Jules, Copilot, Gemini, cualquiera) y todo
+> desarrollador humano DEBE cumplir [`RESTRICCIONES_EXTREMAS.md`](RESTRICCIONES_EXTREMAS.md).**
+> Es vinculante y aplica aunque nadie te lo recuerde en el prompt.
+
+**Antes de reportar cualquier trabajo como terminado, DEBES ejecutar y pegar la salida real:**
+
+```bash
+./run_tests.sh                                      # 706 pruebas Python + 87 pruebas GAS
+ruff check api backend streamlit_cotizador tests
+```
+
+**Las cinco obligaciones no negociables:**
+
+1. **Ejecutar las pruebas siempre**, en toda tarea que toque código. "Es un cambio de una línea" no es excepción.
+2. **Escribir la prueba que falta**: comportamiento nuevo → prueba unitaria; bug corregido → prueba que fallaba antes; regla de negocio → escenario Gherkin.
+3. **No tocar las puertas**: prohibido bajar umbrales o añadir `skip`, `noqa`, `pragma: no cover`, `--no-verify` o `continue-on-error` para que algo pase (*Directiva Cero*).
+4. **Reportar con honestidad**: si una prueba falla, dilo con la salida literal. Nunca afirmes que las pruebas pasan sin haberlas corrido.
+5. **Responder las 5 preguntas de calidad** (§8) en todo PR, en español y con respuestas concretas.
+
+**Por qué:** el dueño de este repositorio no lee línea por línea el código que generas — es una
+decisión deliberada para aprovechar tu productividad. Eso te convierte en la última revisión antes
+de que ese código corra contra datos reales de la empresa. Si no corres las pruebas, no ahorras
+tiempo: gastas la confianza de alguien más.
+
+---
+
+## 1. Dominio del Stack Tecnológico (GAS + Vue.js Monolítico)
+
+- **Backend (Google Apps Script - GAS):**
+  - Todo el código backend reside en `CODIGO.js`.
+  - El frontend se comunica con el backend exclusivamente mediante `google.script.run`.
+  - No intentes usar librerías de Node.js en el backend, el entorno de ejecución es Google Apps Script.
+- **Frontend Monolítico:**
+  - Toda la interfaz de usuario reside en un único archivo `index.html`.
+  - El proyecto utiliza **Vue.js** importado mediante CDN (sin build step / no Node.js).
+  - No introduzcas herramientas de compilación como Webpack o Vite. Todo el código CSS, HTML y JS del frontend debe estar inyectado o definido en línea dentro del propio `index.html`.
+
+## 2. Prevención de Condiciones de Carrera y Duplicación
+
+- **Frontend `_tempId`:**
+  - Al crear una nueva fila, el frontend genera un `_tempId` y envía la solicitud asíncrona.
+  - El frontend bloquea envíos duplicados con una bandera reactiva `isSubmitting`.
+- **Backend Gatekeeper:**
+  - La función `internalBatchUpdateTasks` actúa como protector (Gatekeeper). Utiliza `CacheService` usando el `_tempId` para bloquear ejecuciones concurrentes en la misma fila.
+- **Resolución de Conflictos:**
+  - Si un `FOLIO` no se encuentra, el sistema **siempre** debe intentar hacer coincidir las filas por la combinación de `CONCEPTO` y `FECHA`. Generar un nuevo `FOLIO` es el último recurso.
+- **Respuesta Esperada:**
+  - Las funciones backend como `apiSaveTrackerBatch` o `apiSavePPCData` deben retornar el objeto actualizado completo mediante `res.data` para que el frontend pueda fusionarlo y setear `_isNew = false`.
+
+## 3. Reglas de Negocio Únicas (Routing y Sincronización)
+
+- **El Caso Especial de Antonia (Ventas):**
+  - Cualquier tarea originada desde `ANTONIA_VENTAS` (prefijo de folio "AV-") requiere "Reverse Sync" (sincronización bidireccional). Las actualizaciones hechas por otros miembros del equipo a esas tareas deben sincronizarse de vuelta a la hoja `ANTONIA_VENTAS`.
+  - **Restricción de Enrutamiento Global:** Para cualquier otro usuario, está estrictamente prohibido enviar tareas a hojas que terminen en `(VENTAS)`. El código debe eliminar globalmente este sufijo usando `.replace(/\s*\(VENTAS\)/ig, "").trim()` (ver `apiSavePPCData` y `apiSaveTrackerBatch`).
+- **Distribución Lateral ("Papa Caliente"):**
+  - La delegación lateral y el seguimiento del equipo utilizan la columna `INVOLUCRADOS`. Modificar la lógica aquí debe hacerse con cuidado y respetando el "timeline" (`ESTATUS`). La columna `VENDEDOR` es exclusiva para asignaciones desde `ANTONIA_VENTAS`.
+
+## 4. Manejo Avanzado de Google Sheets y Procesamiento de Datos
+
+- **Búsqueda Dinámica de Encabezados:**
+  - Las hojas de cálculo del personal tienen elementos de UI sobre los datos. No asumas que la fila 1 contiene los encabezados. Busca de forma dinámica el array de celdas que coincida estrictamente con elementos como `"ID"`.
+- **Comparación Insensible (Case-Insensitive):**
+  - Los datos que vienen del frontend pueden tener claves en minúscula (ej., `folio`). Todas las iteraciones y validaciones críticas (como buscar `FOLIO` o `ID`) deben usar `.toUpperCase().trim()`.
+- **Evaluación de Progreso (AVANCE):**
+  - 100% debe evaluarse como `'100'`, `'100%'` o, muy importante, el valor numérico `1` que retorna GAS para celdas con formato de porcentaje. Nunca evalúes el string `'1'` o `'1.0'` como 100%.
+
+## 5. Integraciones: Make.com y Outlook
+
+- **Manejo de Fechas:**
+  - Los webhooks enviados a Make.com **deben** mantener el formato ISO 8601 (`.toISOString()`), incluyendo milisegundos y la "Z" UTC. No los elimines.
+- **Payloads de Notificación:**
+  - El sistema de notificación (Make.com -> Outlook) depende de conocer el origen de la tarea. Asegúrate de incluir indicadores de si la tarea proviene de `ANTONIA_VENTAS` (tabla de ventas) o del Tracker general.
+- **Emails Reales:**
+  - Los usuarios en `USER_DB` están mapeados a sus correos corporativos reales (`@holtmont.com`). Verifica esto antes de probar integraciones.
+
+## 6. Testing Local y Verificaciones
+
+> **Obligatorio, no opcional.** Los umbrales, la línea base medida y las 10 restricciones completas
+> (unitarias, Gherkin, cobertura, mutación, métricas, seguridad, determinismo, contratos, rollback)
+> están en [`RESTRICCIONES_EXTREMAS.md`](RESTRICCIONES_EXTREMAS.md). Ningún trabajo se reporta como
+> terminado sin haber corrido `./run_tests.sh` y pegado su salida real.
+
+- **Mocking Local:**
+  - Las funciones en `CODIGO.js` deben probarse creando stubs para los servicios de GAS (ej. `SpreadsheetApp`, `CacheService`, `PropertiesService`).
+- **Scripts de Verificación:**
+  - Siempre debes ejecutar las pruebas pertinentes tras modificaciones:
+    - Backend GAS (semáforo, ruteo VENTAS, gatekeeper, reverse sync, métricas): `node tests/gas/run_tests.js` (ver `tests/gas/README.md`)
+    - Motor de reglas en Python (paridad con CODIGO.js): `python -m pytest tests/test_tracker_rules.py`
+    - Contrato index.html -> api_service.js -> api/main.py: `python -m pytest tests/test_api_contract.py`
+    - Persistencia en Supabase (cada usuario en su partición `source_sheet`): `python -m pytest tests/test_integracion_supabase.py tests/test_backend_tasks.py tests/test_backend_refactor.py`
+    - Esquema real de la base (solo lectura, requiere credenciales): `python scripts/verificar_base_tasks.py` y `python scripts/verificar_base_quotes.py`
+  - **Ninguna prueba debe escribir en la base de produccion.** `tests/conftest.py` desconecta `SUPABASE_URL`/`SUPABASE_KEY` durante toda la sesion de pytest y fuerza `BACKEND_ENGINE=memoria`. Si necesitas correr contra una base real, hazlo a proposito con `HOLTMONT_TEST_ALLOW_DB=1` y nunca en CI.
+    - Directorio y Departamentos: `node test_departments.js`
+    - Sintaxis y Lógica de Frontend: `node check_html2.js` (si `check_html.js` falla por errores de parseo o compatibilidad, utiliza `check_html2.js` como respaldo funcional).
+
+## 7. Homogeneidad de UI / CSS Estricto
+
+- **Reglas Tipográficas:**
+  - Aplica de forma unificada en tablas (`.table-excel`, `.mini-table`, `.exec-table`, `.table`):
+    - Tamaño y fuente: `font-size: 11px !important; font-family: 'Arial', sans-serif !important;`
+  - **Encabezados:** Todos en minúsculas (`text-transform: lowercase !important;`), a excepción explícita del encabezado 'Folio' o 'ID'.
+  - **Celdas y Formularios:** Todos los datos (textos, inputs, selects) en mayúsculas (`text-transform: uppercase !important;`).
+- **Restricciones Funcionales UI:**
+  - No implementes funciones con micrófonos, dado que GAS bloquea su uso.
+  - Algunos elementos visuales (ej., ciertos botones o columnas en `PPC_FORM`) son meramente "mocks" estéticos y no deben acoplarse con persistencia de base de datos a menos que se solicite explícitamente.
+
+## 8. Quality Control en Pull Requests (submit)
+
+- **Mandatory Quality Checks:**
+  - Cada vez que uses la herramienta `submit` para hacer un Pull Request, **debes** incluir y responder las siguientes 5 preguntas de control de calidad en la descripción del PR. **Además, todos los comentarios y descripciones del PR deben redactarse SIEMPRE en ESPAÑOL/SPANISH:**
+    1. ¿Tiene un feedback loop que verifique el código generado?
+    2. ¿Cómo se hace el rollback si falla?
+    3. ¿Tiene observabilidad en producción?
+    4. ¿Escala si el equipo crece?
+    5. ¿Tu equipo lo mantiene sin ti?
+  - Estas preguntas aseguran que los cambios introducidos sean seguros, mantenibles y sigan las mejores prácticas de ingeniería de software.
+  - **Una respuesta vacía o genérica invalida el PR.** Son el control de calidad, no un trámite. Ver ejemplos de respuestas aceptables y no aceptables en [`RESTRICCIONES_EXTREMAS.md`](RESTRICCIONES_EXTREMAS.md) §R6.1.
+- **Checklist completo de PR:** la plantilla con las 10 restricciones y la declaración de Directiva Cero está en [`RESTRICCIONES_EXTREMAS.md`](RESTRICCIONES_EXTREMAS.md) §8.
+
+---
+---
+
+# 🤖 AI Agent Specific Skills
+
+A continuación, se definen los "Skills" accionables que los agentes de IA (como Claude Code, Cursor o Jules) deben tener activamente en mente y ejecutar según el contexto de su trabajo.
+
+## 🛠️ Skill: Monolithic Frontend Mastery
+**Descripción:** Capacidad para operar dentro de una arquitectura sin empaquetadores (buildless).
+**Cuándo usarlo:** Cada vez que leas, modifiques o crees UI en `index.html`.
+**Reglas a seguir:**
+- **Inyección Directa:** Todo Vue.js, HTML, y CSS vive en `index.html` (o `workorder_form.html`). No uses Node.js, Webpack, Vite, ni crees archivos `.vue`.
+- **CDN Only:** Si necesitas una librería, inclúyela vía CDN en el `<head>`.
+- **Sintaxis de Vue 3 (Composition API preferido):** Mantén la lógica reactiva dentro del bloque `<script type="module">` usando `ref()`, `reactive()`, y exponiéndolas globalmente a `window` si interactúan con llamadas de GAS (`google.script.run`).
+
+## 🛡️ Skill: GAS Backend Guardian
+**Descripción:** Capacidad para escribir y mantener código backend seguro y funcional en Google Apps Script (GAS).
+**Cuándo usarlo:** Cada vez que modifiques `CODIGO.js`.
+**Reglas a seguir:**
+- **Prohibición de Node en Backend:** El backend es GAS. Ignora paquetes de npm; no sirven en `CODIGO.js`.
+- **Puente Frontend-Backend:** El frontend se comunica **exclusivamente** mediante `google.script.run`. Toda función que el frontend llame debe estar definida en el scope global de `CODIGO.js`.
+- **Pase de Contexto de Usuario:** Siempre pasa `currentUsername.value` desde Vue.js hacia el backend para registrar auditorías usando la función `registrarLog(user, action_type, description)`.
+- **Data Validation Fallbacks:** Al guardar en celdas con listas desplegables (Data Validation), implementa fallbacks estrictos. Ej: Si `ESTATUS` viene vacío o inválido, fuerza `'PENDIENTE'`. Si `CUMPLIMIENTO` viene vacío, fuerza `'NO'`.
+
+## 🧬 Skill: Anti-Duplication & Race Condition Resolver
+**Descripción:** Prevención absoluta de duplicidad de tareas o filas debido a asincronía y múltiples clicks de usuario.
+**Cuándo usarlo:** Al modificar cualquier flujo que cree, actualice o asigne tareas (ej. `apiSaveTrackerBatch`, `internalBatchUpdateTasks`, `apiSavePPCData`).
+**Reglas a seguir:**
+- **Bloqueo Frontend (`isSubmitting`):** Todo botón de guardado en `index.html` debe ligarse a un estado reactivo `isSubmitting` que prevenga múltiples llamadas simultáneas a GAS.
+- **Identidad Temporal (`_tempId`):** Las filas nuevas generan un `_tempId` único en el frontend antes de enviarse.
+- **Gatekeeper con CacheService:** En el backend, usa `CacheService.getScriptCache()` usando el `_tempId` y el nombre de la hoja como "Lock" (candado) para bloquear inserciones paralelas del mismo evento.
+- **Resolución Histórica (Fallback):** Si estás actualizando y la búsqueda de `FOLIO` o `ID` falla (ej. error de escritura), haz un fallback buscando la combinación exacta de `CONCEPTO` y `FECHA`.
+
+## 🧭 Skill: Complex Routing & Reverse Sync
+**Descripción:** Capacidad para manejar las reglas idiosincráticas de asignación de tareas en la empresa.
+**Cuándo usarlo:** Al tocar lógica de distribución de filas a hojas de personal.
+**Reglas a seguir:**
+- **La Ley de Antonia (Ventas):** Las asignaciones y el Tracker general *no deben* mezclarse con la tabla core de ventas (`ANTONIA_VENTAS`). Todo enrutamiento general debe enviar las tareas a su Tracker personal ('ANTONIA PINEDA LOPEZ').
+- **Filtro de Sufijo de Ventas:** Para cualquier usuario que **no** sea Antonia, debes remover silenciosamente el sufijo `(VENTAS)` de la hoja destino globalmente (`targetSheet.replace(/\s*\(VENTAS\)/ig, "").trim()`).
+- **Reverse Sync (Prefijo AV-):** Si una tarea tiene el prefijo `AV-` (vino de `ANTONIA_VENTAS`), cualquier actualización lateral en hojas de otros trabajadores debe reflejarse de forma bidireccional enviando los cambios de vuelta a la hoja maestra de Antonia.
+
+## 🕵️ Skill: Dynamic Sheet Parsing & Case-Insensitivity
+**Descripción:** Capacidad para leer datos resilientes frente a inconsistencias humanas en Google Sheets.
+**Cuándo usarlo:** Al leer o escribir matrices bidimensionales obtenidas con `.getValues()`.
+**Reglas a seguir:**
+- **No asumas la Fila 1:** Busca dinámicamente la fila de encabezados evaluando si el array contiene columnas clave (ej. `cells.includes("ID")`).
+- **Insensibilidad Extrema:** Los payloads del frontend pueden enviar propiedades como `folio`, mientras el backend espera `FOLIO`. Siempre itera sobre las claves de los objetos y compáralas usando `.toUpperCase().trim()`.
+- **Interpretación del 100%:** Para la columna `AVANCE`, el valor `1` crudo de GAS (porcentaje) debe evaluarse como 100%.
+
+## 🔌 Skill: Bulletproof External Integrations
+**Descripción:** Interacción segura con plataformas de terceros como Make.com y Outlook 365.
+**Cuándo usarlo:** Al enviar webhooks o notificaciones calendarizadas.
+**Reglas a seguir:**
+- **Integridad de Fechas:** Nunca mutar una fecha al enviarla por webhook. Usa exactamente el string estándar `fecha.toISOString()`. Asegúrate de que retenga los milisegundos y la letra "Z" al final para que Make.com parsee correctamente el UTC.
+- **Contexto de Origen de Tarea:** Los payloads de webhook (`NotifierService.sendToOutlook`) deben especificar si el registro viene de una "tabla de ventas" o del "tracker general" para que Make formatee correctamente el correo.
+
+## 🧪 Skill: Local Test Runner
+**Descripción:** Capacidad para verificar que tus modificaciones no destruyen el entorno de producción.
+**Cuándo usarlo:** Inmediatamente después de aplicar cambios y antes de solicitar code review o commit.
+**Reglas a seguir:**
+- **Verificación de Organigrama:** Ejecuta `node test_departments.js` si tocas `USER_DB` o `INITIAL_DIRECTORY`.
+- **Syntax Check Frontend:** Ejecuta `node check_html2.js` para asegurar que las modificaciones en `index.html` no contengan errores de sintaxis catastróficos.
+
+---
+---
+
+# 📁 Biblioteca de Agentes y Skills Externas (`.claude/`)
+
+Este repositorio incluye una extensa colección de agentes y skills ubicados en la carpeta `.claude/`. Como agente de IA, **debes invocar y leer de forma dinámica** los archivos relevantes de estos directorios dependiendo del lenguaje, framework o tarea específica que estés ejecutando.
+
+### 🧠 Agentes Disponibles (`.claude/agents/`)
+Antes de iniciar una tarea compleja, busca tu rol correspondiente en esta lista y lee el archivo `.md`:
+
+- **Arquitectura y Diseño de Sistemas:**
+  - `architect.md`, `code-architect.md`, `homelab-architect.md`, `network-architect.md`
+  - `type-design-analyzer.md`, `a11y-architect.md`
+- **Revisores de Código Especializados (Reviewers):**
+  - **General:** `code-reviewer.md`, `security-reviewer.md`, `mle-reviewer.md`, `network-config-reviewer.md`
+  - **Python / Backend:** `python-reviewer.md`, `django-reviewer.md`, `fastapi-reviewer.md`, `database-reviewer.md`
+  - **Frontend / Móvil:** `vue-reviewer.md`, `react-reviewer.md`, `swift-reviewer.md`, `kotlin-reviewer.md`, `flutter-reviewer.md`
+  - **Sistemas / Otros:** `cpp-reviewer.md`, `csharp-reviewer.md`, `go-reviewer.md`, `java-reviewer.md`, `php-reviewer.md`, `rust-reviewer.md`, `typescript-reviewer.md`, `healthcare-reviewer.md`
+- **Resolución de Errores y Build (Resolvers):**
+  - **General:** `build-error-resolver.md`, `network-troubleshooter.md`, `silent-failure-hunter.md`
+  - **Lenguajes:** `cpp-build-resolver.md`, `dart-build-resolver.md`, `django-build-resolver.md`, `go-build-resolver.md`, `java-build-resolver.md`, `kotlin-build-resolver.md`, `pytorch-build-resolver.md`, `react-build-resolver.md`, `rust-build-resolver.md`, `swift-build-resolver.md`, `harmonyos-app-resolver.md`
+- **Optimización y Refactorización:**
+  - `code-simplifier.md`, `performance-optimizer.md`, `refactor-cleaner.md`, `harness-optimizer.md`
+- **Testing, QA y Análisis de PRs:**
+  - `e2e-runner.md`, `pr-test-analyzer.md`, `tdd-guide.md`, `agent-evaluator.md`, `gan-evaluator.md`
+- **Planificación, Documentación y Open Source:**
+  - `planner.md`, `chief-of-staff.md`, `doc-updater.md`, `docs-lookup.md`
+  - `comment-analyzer.md`, `conversation-analyzer.md`, `spec-miner.md`
+  - `opensource-forker.md`, `opensource-packager.md`, `opensource-sanitizer.md`
+- **Especializados:**
+  - `code-explorer.md`, `gan-generator.md`, `gan-planner.md`, `loop-operator.md`, `marketing-agent.md`, `seo-specialist.md`
+
+### 🛠️ Skills Técnicas y Frameworks (`.claude/skills/`)
+Cuando la tarea involucre tecnologías o patrones de diseño específicos, consulta obligatoriamente estas carpetas (dentro de ellas habrá un `README.md` o instrucciones equivalentes):
+
+- **Arquitectura y Patrones:** `architecture-decision-records/`, `hexagonal-architecture/`, `security-review/`, `security-scan/`, `tdd-workflow/`, `caveman/`
+- **Inteligencia Artificial y NLP:** `building-pydantic-ai-agents/`, `langchain-fundamentals/`, `langgraph-persistence/`, `mcp-builder/`
+- **Desarrollo Backend y APIs:** `fastapi/`, `groq-api/`
+- **Herramientas de Procesamiento:** `ffmpeg/`, `pdf-extraction/`
+- **Google Workspace y Datos:** `gws-script/`, `developing-with-streamlit/`
+
+> **Instrucción para Agentes (Jules, Claude, Cursor):** No asumas conocer las reglas de un framework sin antes consultar el directorio `.claude/skills/` correspondiente. Si vas a revisar código Python, abre y asimila `.claude/agents/python-reviewer.md` primero.
