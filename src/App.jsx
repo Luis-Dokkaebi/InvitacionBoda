@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { Mail, Heart, Gift, Gem, CheckCircle } from 'lucide-react';
 
 const questionsData = [
@@ -39,6 +39,23 @@ const questionsData = [
     id: 4,
     question: '¿De qué color será el vestido que usarás en mi boda? 👗',
     options: ['Blanco', 'Rojo', 'Negro', 'Rosa intenso', 'Del color que tú me digas.'],
+    // Pestañas para que cada invitado elija si responde por vestido o por ropa.
+    variants: [
+      {
+        id: 'vestido',
+        label: 'Vestido 👗',
+        answerLabel: 'Vestido',
+        question: '¿De qué color será el vestido que usarás en mi boda? 👗',
+        // Opción que se escapa y no se puede elegir (como el botón "No").
+        blockedOption: 'Rojo',
+      },
+      {
+        id: 'ropa',
+        label: 'Ropa 👔',
+        answerLabel: 'Ropa',
+        question: '¿De qué color será la ropa que usarás en mi boda? 👔',
+      },
+    ],
   },
 ];
 
@@ -69,6 +86,32 @@ export default function WeddingInvitation() {
   const [honeypot, setHoneypot] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [sendError, setSendError] = useState('');
+  const [variantId, setVariantId] = useState(null);
+  const [optionOrder, setOptionOrder] = useState(null);
+
+  const optionRefs = useRef(new Map());
+  const optionRectsBeforeSwap = useRef(null);
+
+  // Animación FLIP: cuando la opción bloqueada cambia de lugar, cada botón se desliza
+  // desde su posición anterior hasta la nueva en vez de saltar.
+  useLayoutEffect(() => {
+    const previousRects = optionRectsBeforeSwap.current;
+    if (!previousRects) return;
+    optionRectsBeforeSwap.current = null;
+
+    optionRefs.current.forEach((element, key) => {
+      const before = previousRects.get(key);
+      if (!element || !before) return;
+      const deltaY = before.top - element.getBoundingClientRect().top;
+      if (!deltaY) return;
+      element.style.transition = 'none';
+      element.style.transform = `translateY(${deltaY}px)`;
+      requestAnimationFrame(() => {
+        element.style.transition = 'transform 0.25s ease-out';
+        element.style.transform = '';
+      });
+    });
+  }, [optionOrder]);
 
   const cardRef = useRef(null);
   const noAnchorRef = useRef(null);
@@ -103,7 +146,32 @@ export default function WeddingInvitation() {
 
   const goToStep = (nextStep) => {
     setNoButtonPosition({ x: 0, y: 0 });
+    setVariantId(null);
+    setOptionOrder(null);
     setStep(nextStep);
+  };
+
+  const selectVariant = (id) => {
+    setVariantId(id);
+    setOptionOrder(null);
+  };
+
+  // Intercambia la opción bloqueada con otra al azar para que nunca quede bajo el cursor/dedo.
+  const dodgeOption = (blockedOption, options) => {
+    const order = optionOrder ?? options;
+    const from = order.indexOf(blockedOption);
+    const candidates = order.map((_, index) => index).filter((index) => index !== from);
+    const to = candidates[Math.floor(Math.random() * candidates.length)];
+
+    const rects = new Map();
+    optionRefs.current.forEach((element, key) => {
+      if (element) rects.set(key, element.getBoundingClientRect());
+    });
+    optionRectsBeforeSwap.current = rects;
+
+    const next = [...order];
+    [next[from], next[to]] = [next[to], next[from]];
+    setOptionOrder(next);
   };
 
   const answerQuestion = (option) => {
@@ -206,28 +274,74 @@ export default function WeddingInvitation() {
     </>
   );
 
+  const optionClass =
+    'w-full text-left p-4 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 transition-all text-stone-700 text-sm cursor-pointer';
+
   const renderQuestion = () => {
-    const { question, options } = questionsData[step - 1];
+    const { question, options, variants } = questionsData[step - 1];
+    const variant = variants?.find((item) => item.id === variantId) ?? variants?.[0];
+    const title = variant?.question ?? question;
+    const blockedOption = variant?.blockedOption;
+    const orderedOptions = optionOrder ?? options;
+
     return (
       <>
         <div className="flex flex-col items-center w-full">
           <p className={topTextClass}>
             Pregunta {step} de {TOTAL_QUESTIONS}
           </p>
-          <h2 className="text-2xl font-serif text-center mb-6 text-stone-800">{question}</h2>
+          {variants && (
+            <div
+              className="flex gap-1 p-1 mb-4 rounded-full bg-stone-100"
+              role="tablist"
+              aria-label="Tipo de atuendo"
+            >
+              {variants.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={item.id === variant.id}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors cursor-pointer ${
+                    item.id === variant.id
+                      ? 'bg-white text-rose-900 shadow-sm'
+                      : 'text-stone-500 hover:text-stone-700'
+                  }`}
+                  onClick={() => selectVariant(item.id)}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          )}
+          <h2 className="text-2xl font-serif text-center mb-6 text-stone-800">{title}</h2>
         </div>
 
         <div className="flex flex-col w-full gap-3">
-          {options.map((option) => (
-            <button
-              key={option}
-              type="button"
-              className="w-full text-left p-4 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 transition-all text-stone-700 text-sm cursor-pointer"
-              onClick={() => answerQuestion(option)}
-            >
-              {option}
-            </button>
-          ))}
+          {orderedOptions.map((option) => {
+            const isBlocked = option === blockedOption;
+            const dodge = () => dodgeOption(option, options);
+            return (
+              <button
+                key={option}
+                ref={(element) => {
+                  if (element) optionRefs.current.set(option, element);
+                  else optionRefs.current.delete(option);
+                }}
+                type="button"
+                className={optionClass}
+                onClick={
+                  isBlocked
+                    ? dodge
+                    : () => answerQuestion(variant ? `${variant.answerLabel}: ${option}` : option)
+                }
+                onMouseEnter={isBlocked ? dodge : undefined}
+                onTouchStart={isBlocked ? dodge : undefined}
+              >
+                {option}
+              </button>
+            );
+          })}
         </div>
       </>
     );
