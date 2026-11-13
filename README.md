@@ -50,7 +50,7 @@ npx vercel dev
 
 - Textos (fecha, salón, hora, obsequios, etc.): `src/story/content.js`.
 - Música de fondo: `public/musica.m4a`. Empieza al tocar "Abrir invitación" (los navegadores no permiten sonido sin un toque), sigue durante la confirmación y se puede silenciar con el botón de bocina.
-- Foto de la contraportada: copia la imagen a `public/foto.jpg` (se muestra en blanco y negro). Si no existe, aparece una ilustración en su lugar.
+- Foto de la contraportada: copia la imagen a `public/foto.jpg`. Si no existe, aparece una ilustración en su lugar.
 - Ilustraciones: `src/story/illustrations.jsx`. Para usar tus propios SVG conserva la clase `draw-svg` y usa trazos sin relleno; los rellenos que aparecen al final llevan `fill-reveal`.
 - Tiempos de animación de cada página: funciones `build*` en `src/story/pages.jsx`.
 
