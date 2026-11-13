@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { BookOpen, ChevronLeft, ChevronRight } from 'lucide-react';
 import { gsap } from './anim.js';
 import { PAGES } from './pages.jsx';
 import HeartsCanvas from './HeartsCanvas.jsx';
@@ -12,11 +12,13 @@ const TOTAL_PAGES = PAGES.length;
 /**
  * Libro de cuentos interactivo (SDD): paso de página 3D con CSS transforms + GSAP,
  * timelines por página que se reproducen al llegar a cada una y swipe/flechas/teclado.
- * Al terminar (o al saltar la historia) llama a `onFinish`.
+ * Empieza con el botón "Abrir invitación" (`onOpen`, que arranca la música) y, al terminar
+ * (o al saltar la historia), llama a `onFinish`. `music` es el botón para silenciar la música.
  */
-export default function StoryBook({ onFinish }) {
+export default function StoryBook({ onFinish, onOpen, music }) {
   const [index, setIndex] = useState(0);
   const [hasNavigated, setHasNavigated] = useState(false);
+  const [opened, setOpened] = useState(false);
 
   const stageRef = useRef(null);
   const bookWrapRef = useRef(null);
@@ -32,6 +34,8 @@ export default function StoryBook({ onFinish }) {
   const swiped = useRef(false);
   const onFinishRef = useRef(onFinish);
   onFinishRef.current = onFinish;
+  const gateRef = useRef(null);
+  const openedRef = useRef(false);
 
   const api = useMemo(
     () => ({
@@ -88,8 +92,22 @@ export default function StoryBook({ onFinish }) {
     });
   };
 
+  // Abre el libro: arranca la música (requiere el toque del usuario) y la animación de la portada.
+  const open = () => {
+    if (openedRef.current) return;
+    openedRef.current = true;
+    onOpen?.();
+    gsap.to(gateRef.current, {
+      autoAlpha: 0,
+      duration: reduceMotion.current ? 0 : 0.5,
+      ease: 'power1.out',
+      onComplete: () => setOpened(true),
+    });
+    gsap.delayedCall(reduceMotion.current ? 0 : 0.3, () => arrive(0));
+  };
+
   const goNext = () => {
-    if (busy.current || finishing.current) return;
+    if (!openedRef.current || busy.current || finishing.current) return;
     const i = indexRef.current;
     if (i >= TOTAL_PAGES - 1) {
       finish();
@@ -132,7 +150,7 @@ export default function StoryBook({ onFinish }) {
   };
 
   const goPrev = () => {
-    if (busy.current || finishing.current) return;
+    if (!openedRef.current || busy.current || finishing.current) return;
     const i = indexRef.current;
     if (i === 0) return;
     const current = pageRefs.current[i];
@@ -188,10 +206,11 @@ export default function StoryBook({ onFinish }) {
         timelines.current[i] = tl;
       });
     }, stageRef);
-    const start = gsap.delayedCall(0.4, () => arrive(0));
+    // Si el libro ya estaba abierto (remontaje en desarrollo), vuelve a reproducir la portada.
+    const start = openedRef.current ? gsap.delayedCall(0.4, () => arrive(0)) : null;
 
     return () => {
-      start.kill();
+      start?.kill();
       ctx.revert();
       timelines.current = [];
       visited.current = new Set();
@@ -322,11 +341,22 @@ export default function StoryBook({ onFinish }) {
       </nav>
 
       <div className="story-footer">
-        <span className="story-hint">{hasNavigated ? '' : 'Desliza para pasar la página'}</span>
+        {music}
+        <span className="story-hint">{hasNavigated ? '' : 'Desliza para avanzar'}</span>
         <button type="button" className="story-skip" onClick={finish}>
           Saltar historia
         </button>
       </div>
+
+      {!opened && (
+        <div className="story-gate" ref={gateRef}>
+          <button type="button" className="gate-button" onClick={open}>
+            <BookOpen aria-hidden="true" />
+            Abrir invitación
+          </button>
+          <p className="gate-note">Sube el volumen: la historia tiene música 🎶</p>
+        </div>
+      )}
     </div>
   );
 }

@@ -248,8 +248,12 @@
   color: #7d7264;
 }
 
+.story-hint {
+  flex: 1;
+  text-align: center;
+}
+
 .story-skip {
-  margin-left: auto;
   padding: 2px 4px;
   color: #7d7264;
   text-decoration: underline;
@@ -270,6 +274,78 @@
   30% {
     transform: translateX(5px);
   }
+}
+
+/* ---------- Portada cerrada y música ---------- */
+
+.story-gate {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 24px;
+  background: rgba(245, 238, 226, 0.55);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+.gate-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  border-radius: 999px;
+  background: var(--color-accent-red);
+  color: #fff;
+  font-family: var(--font-hand);
+  font-size: 22px;
+  box-shadow: 0 10px 24px rgba(217, 59, 59, 0.35);
+  cursor: pointer;
+  animation: cta-pulse 1.6s ease-in-out infinite;
+}
+
+.gate-button svg {
+  width: 24px;
+  height: 24px;
+}
+
+.gate-button:focus-visible {
+  outline: 2px solid var(--color-accent-teal);
+  outline-offset: 4px;
+}
+
+.gate-note {
+  font-size: 16px;
+  color: #6f6455;
+  text-align: center;
+}
+
+.music-toggle {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(51, 51, 51, 0.25);
+  background: rgba(255, 255, 255, 0.8);
+  color: #333;
+  cursor: pointer;
+}
+
+.music-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+.music-toggle:focus-visible {
+  outline: 2px solid #1e7c82;
+  outline-offset: 3px;
 }
 
 /* ---------- Dibujos SVG (SDD 4.A) ---------- */
@@ -768,6 +844,7 @@
   .swing,
   .wag,
   .nav-btn.nudge,
+  .gate-button,
   .confirm-cta-inner {
     animation: none;
   }
