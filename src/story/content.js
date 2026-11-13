@@ -9,8 +9,11 @@ export const STORY = {
   beginning: {
     intro: 'Érase una vez',
     panels: [
-      { id: 'cafe', text: 'que se conocieron en un trabajo, entre cafés y pendientes...' },
-      { id: 'selfie', text: 'y, aunque él tardó en dar el primer paso, ella supo esperarlo.' },
+      {
+        id: 'cafe',
+        text: 'que se conocieron en un trabajo difícil, pero al que siempre agradecerán el haberse encontrado...',
+      },
+      { id: 'selfie', text: 'y, aunque él tardó en captar las señales para hacer match...' },
       { id: 'perro', text: 'Hoy suman mil experiencias, risas y aventuras...' },
       { id: 'ninos', text: 'en compañía de Alex y Matias ❤️' },
     ],
