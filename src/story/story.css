@@ -1,0 +1,850 @@
+/* ==========================================================================
+   Libro de cuentos "El Cuento de Armando y Sabina" — guía de estilos (SDD 3)
+   ========================================================================== */
+
+.story-stage {
+  --color-text-main: #333333;
+  --color-accent-teal: #1e7c82;
+  --color-accent-red: #d93b3b;
+  --paper: #fbf6ec;
+  --paper-back: #f3eadb;
+  --font-title: 'Playfair Display', Georgia, serif;
+  --font-script: 'Great Vibes', 'Brush Script MT', cursive;
+  --font-hand: 'Patrick Hand', 'Comic Sans MS', cursive;
+  --paper-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .35 0 0 0 0 .2 0 0 0 .1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: max(12px, env(safe-area-inset-top)) 16px max(10px, env(safe-area-inset-bottom));
+  background: radial-gradient(ellipse at 50% 30%, #f5eee2 0%, #e3d6c1 100%);
+  color: var(--color-text-main);
+  font-family: var(--font-hand);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.story-stage .red {
+  color: var(--color-accent-red);
+}
+
+.story-stage .script {
+  font-family: var(--font-script);
+  font-weight: 400;
+}
+
+/* ---------- Libro ---------- */
+
+.book-wrap {
+  --book-w: min(calc(100vw - 32px), calc((100vh - 130px) * 0.64), 440px);
+  position: relative;
+}
+
+@supports (height: 100dvh) {
+  .book-wrap {
+    --book-w: min(calc(100vw - 32px), calc((100dvh - 130px) * 0.64), 440px);
+  }
+}
+
+.book {
+  position: relative;
+  width: var(--book-w);
+  height: calc(var(--book-w) / 0.64);
+  perspective: 2200px;
+  touch-action: pan-y;
+}
+
+.book-base {
+  position: absolute;
+  inset: 0;
+  border-radius: 3px 12px 12px 3px;
+  background: repeating-linear-gradient(to bottom, #efe5d3 0 1px, var(--paper) 1px 3px);
+  box-shadow:
+    5px 0 0 -1px #ece2cf,
+    9px 1px 0 -2px #e4d8c3,
+    0 22px 40px rgba(70, 45, 15, 0.28);
+}
+
+.page {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform-origin: left center;
+  will-change: transform;
+}
+
+.page-face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 3px 12px 12px 3px;
+  background-color: var(--paper);
+  background-image: var(--paper-texture);
+}
+
+/* Lomo del libro: sombra suave a la izquierda de cada página. */
+.page-front::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 7%;
+  background: linear-gradient(to right, rgba(90, 60, 25, 0.18), transparent);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.page-back {
+  transform: rotateY(180deg);
+  border-radius: 12px 3px 3px 12px;
+  background-color: var(--paper-back);
+  box-shadow: inset -10px 0 18px -10px rgba(90, 60, 25, 0.35);
+}
+
+.page-shadow,
+.page-light {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.page-shadow {
+  background: linear-gradient(to right, rgba(50, 30, 10, 0.35), rgba(50, 30, 10, 0.08) 55%, transparent);
+}
+
+.page-light {
+  background: linear-gradient(to left, rgba(40, 25, 10, 0.22), rgba(255, 255, 255, 0.15) 60%, transparent);
+}
+
+.page-content {
+  position: absolute;
+  inset: 0;
+  container-type: size;
+}
+
+.page-number {
+  position: absolute;
+  right: 5cqw;
+  bottom: 2.5cqw;
+  font-size: 3.6cqw;
+  color: #9a8f80;
+  pointer-events: none;
+}
+
+.hearts-canvas {
+  position: absolute;
+  inset: -20px;
+  width: calc(100% + 40px);
+  height: calc(100% + 40px);
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* ---------- Navegación ---------- */
+
+.story-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: var(--book-w, min(calc(100vw - 32px), 440px));
+  max-width: 440px;
+  width: min(calc(100vw - 32px), 440px);
+}
+
+.nav-btn,
+.nav-finish {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.2s, opacity 0.2s, transform 0.2s;
+}
+
+.nav-btn {
+  width: 44px;
+  background: rgba(255, 255, 255, 0.75);
+  color: var(--color-text-main);
+  border: 1.5px solid rgba(51, 51, 51, 0.25);
+}
+
+.nav-btn:hover:not(:disabled) {
+  background: #fff;
+}
+
+.nav-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.nav-btn.nudge {
+  animation: nudge 1.4s ease-in-out infinite;
+}
+
+.nav-finish {
+  gap: 4px;
+  padding: 0 14px 0 18px;
+  background: var(--color-accent-red);
+  color: #fff;
+  font-family: var(--font-hand);
+  font-size: 18px;
+  box-shadow: 0 6px 16px rgba(217, 59, 59, 0.35);
+}
+
+.nav-finish:hover {
+  background: #c73232;
+}
+
+.nav-btn svg,
+.nav-finish svg {
+  width: 22px;
+  height: 22px;
+}
+
+.nav-btn:focus-visible,
+.nav-finish:focus-visible,
+.story-skip:focus-visible,
+.pg-confirm:focus-visible {
+  outline: 2px solid var(--color-accent-teal);
+  outline-offset: 3px;
+}
+
+.nav-dots {
+  display: flex;
+  gap: 7px;
+}
+
+.nav-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(51, 51, 51, 0.22);
+  transition: width 0.3s, background-color 0.3s;
+}
+
+.nav-dot.is-active {
+  width: 20px;
+  background: var(--color-accent-red);
+}
+
+.story-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: min(calc(100vw - 32px), 440px);
+  min-height: 22px;
+  font-size: 15px;
+  color: #7d7264;
+}
+
+.story-hint {
+  flex: 1;
+  text-align: center;
+}
+
+.story-skip {
+  padding: 2px 4px;
+  color: #7d7264;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.story-skip:hover {
+  color: var(--color-text-main);
+}
+
+@keyframes nudge {
+  0%,
+  60%,
+  100% {
+    transform: translateX(0);
+  }
+  30% {
+    transform: translateX(5px);
+  }
+}
+
+/* ---------- Portada cerrada y música ---------- */
+
+.story-gate {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 24px;
+  background: rgba(245, 238, 226, 0.55);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+.gate-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  border-radius: 999px;
+  background: var(--color-accent-red);
+  color: #fff;
+  font-family: var(--font-hand);
+  font-size: 22px;
+  box-shadow: 0 10px 24px rgba(217, 59, 59, 0.35);
+  cursor: pointer;
+  animation: cta-pulse 1.6s ease-in-out infinite;
+}
+
+.gate-button svg {
+  width: 24px;
+  height: 24px;
+}
+
+.gate-button:focus-visible {
+  outline: 2px solid var(--color-accent-teal);
+  outline-offset: 4px;
+}
+
+.gate-note {
+  font-size: 16px;
+  color: #6f6455;
+  text-align: center;
+}
+
+.music-toggle {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(51, 51, 51, 0.25);
+  background: rgba(255, 255, 255, 0.8);
+  color: #333;
+  cursor: pointer;
+}
+
+.music-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+.music-toggle:focus-visible {
+  outline: 2px solid #1e7c82;
+  outline-offset: 3px;
+}
+
+/* ---------- Dibujos SVG (SDD 4.A) ---------- */
+
+.draw-svg {
+  display: block;
+  overflow: visible;
+}
+
+.draw-svg :is(path, circle, ellipse, line, polyline, polygon, rect) {
+  stroke: var(--color-text-main);
+  stroke-width: 2;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.draw-svg .accent {
+  stroke: var(--color-accent-red);
+}
+
+.draw-svg .speed {
+  stroke: #9a8f80;
+  stroke-dasharray: none;
+}
+
+.draw-svg .fill-reveal {
+  stroke: none;
+}
+
+.draw-svg .fill-red {
+  fill: var(--color-accent-red);
+}
+
+.draw-svg .fill-pink {
+  fill: #f2a3a3;
+}
+
+.draw-svg .fill-dark {
+  fill: #4a4038;
+}
+
+.draw-svg .fill-gold {
+  fill: #f1cf72;
+}
+
+/* Columpios: péndulo sutil infinito (SDD página 6). */
+.swing {
+  transform-box: view-box;
+  animation: swing 2.6s ease-in-out infinite alternate;
+}
+
+.swing-a {
+  transform-origin: 70px 16px;
+  animation-delay: -1.3s;
+}
+
+.swing-b {
+  transform-origin: 130px 16px;
+}
+
+@keyframes swing {
+  from {
+    transform: rotate(-2deg);
+  }
+  to {
+    transform: rotate(2deg);
+  }
+}
+
+.wag {
+  transform-box: fill-box;
+  transform-origin: 100% 100%;
+  animation: wag 0.45s ease-in-out infinite alternate;
+}
+
+@keyframes wag {
+  from {
+    transform: rotate(-10deg);
+  }
+  to {
+    transform: rotate(10deg);
+  }
+}
+
+/* Máquina de escribir sin saltos de layout. */
+.tw {
+  position: relative;
+  display: inline-block;
+}
+
+.tw-line {
+  position: relative;
+  display: block;
+}
+
+.tw-ghost {
+  visibility: hidden;
+}
+
+.tw-live {
+  position: absolute;
+  inset: 0;
+}
+
+/* ---------- Páginas ---------- */
+
+.pg {
+  width: 100%;
+  height: 100%;
+  padding: 7cqw 7cqw 8cqw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.pg .draw-svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Página 1: portada */
+.pg-cover {
+  justify-content: center;
+  gap: 2cqw;
+}
+
+.cover-kicker {
+  font-size: 6.5cqw;
+  letter-spacing: 0.04em;
+}
+
+.cover-title {
+  font-family: var(--font-title);
+  font-weight: 900;
+  font-size: 17cqw;
+  line-height: 1;
+  letter-spacing: 0.05em;
+  color: var(--color-accent-teal);
+}
+
+.pg-cover .cover-art {
+  flex: 1 1 0;
+  min-height: 0;
+  max-height: 95cqw;
+}
+
+.cover-byline {
+  font-size: 5.5cqw;
+}
+
+.cover-byline .script {
+  display: block;
+  font-size: 11cqw;
+  line-height: 1.1;
+}
+
+/* Página 2: viñetas en Z */
+.pg-begin {
+  gap: 3cqw;
+}
+
+.begin-intro {
+  font-size: 6cqw;
+}
+
+.begin-names {
+  font-size: 12cqw;
+  line-height: 1;
+}
+
+.panels {
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 3.5cqw;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 2cqw;
+  border: 2px solid var(--color-text-main);
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.panel-0,
+.panel-3 {
+  transform: rotate(-1.2deg);
+}
+
+.panel-1,
+.panel-2 {
+  transform: rotate(1deg);
+}
+
+.panel .draw-svg {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.panel figcaption {
+  margin-top: 1cqw;
+  font-size: 3.9cqw;
+  line-height: 1.12;
+}
+
+/* Página 3: la decisión */
+.pg-decision {
+  gap: 2cqw;
+}
+
+.decision-top {
+  font-size: 5.6cqw;
+}
+
+.decision-art {
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+}
+
+.decision-lines {
+  font-size: 5.8cqw;
+  line-height: 1.25;
+}
+
+.decision-final {
+  font-family: var(--font-script);
+  font-size: 11cqw;
+  line-height: 1.1;
+}
+
+/* Página 4: la fecha */
+.pg-date {
+  justify-content: center;
+  gap: 2cqw;
+}
+
+.curved-title {
+  width: 100%;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.curved-title text {
+  font-family: var(--font-script);
+  font-size: 40px;
+  fill: var(--color-accent-red);
+}
+
+.date-art {
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+}
+
+.date-text {
+  font-family: var(--font-title);
+  font-weight: 700;
+  font-size: 9cqw;
+  line-height: 1.1;
+}
+
+.pg .heart-divider {
+  width: 55cqw;
+  height: auto;
+  flex-shrink: 0;
+}
+
+/* Página 5: folleto con alineación irregular */
+.pg-venue {
+  gap: 2.5cqw;
+  text-align: left;
+}
+
+.venue-head {
+  align-self: flex-start;
+  transform: rotate(-1.5deg);
+}
+
+.venue-name {
+  font-family: var(--font-title);
+  font-weight: 700;
+  font-size: 7.4cqw;
+  line-height: 1.1;
+}
+
+.venue-city {
+  margin-top: 1cqw;
+  margin-left: 18cqw;
+  font-size: 15cqw;
+  line-height: 1.15;
+}
+
+.venue-paragraph {
+  align-self: flex-start;
+  font-size: 4.5cqw;
+  line-height: 1.25;
+  white-space: pre-line;
+}
+
+.venue-row {
+  display: flex;
+  align-items: center;
+  gap: 2cqw;
+  width: 100%;
+  flex: 1 1 0;
+  min-height: 18cqw;
+  max-height: 32cqw;
+}
+
+.venue-stairs {
+  flex: 0 0 30%;
+  height: 100%;
+  min-width: 0;
+}
+
+.venue-dress {
+  flex: 1 1 0;
+  font-size: 4.8cqw;
+  line-height: 1.25;
+  text-align: right;
+  transform: rotate(-2deg);
+}
+
+.venue-time {
+  align-self: flex-start;
+  margin-left: 6cqw;
+  font-family: var(--font-title);
+  font-weight: 700;
+  font-size: 10cqw;
+  line-height: 1;
+}
+
+.venue-time-label {
+  font-family: var(--font-hand);
+  font-weight: 400;
+  font-size: 5cqw;
+}
+
+.venue-toast {
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+}
+
+/* Página 6: obsequios */
+.pg-gifts {
+  justify-content: center;
+  gap: 2cqw;
+}
+
+.gifts-art {
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+  max-height: 95cqw;
+}
+
+.gifts-title {
+  font-size: 17cqw;
+  line-height: 1.05;
+}
+
+.gifts-text {
+  max-width: 92%;
+  white-space: pre-line;
+  font-size: 5.4cqw;
+  line-height: 1.25;
+}
+
+/* Página 7: toda la página es el CTA */
+.pg-confirm {
+  justify-content: center;
+  gap: 4cqw;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+}
+
+.confirm-title {
+  font-family: var(--font-title);
+  font-weight: 700;
+  font-size: 10cqw;
+  line-height: 1.1;
+}
+
+.confirm-art {
+  display: block;
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+  max-height: 75cqw;
+}
+
+.confirm-cta {
+  display: inline-block;
+}
+
+.confirm-cta-inner {
+  display: inline-block;
+  padding: 2.6cqw 6cqw;
+  border-radius: 999px;
+  background: var(--color-accent-red);
+  color: #fff;
+  font-size: 5.4cqw;
+  box-shadow: 0 1.5cqw 4cqw rgba(217, 59, 59, 0.35);
+  animation: cta-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes cta-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+/* Página 8: cierre con foto polaroid */
+.pg-closing {
+  justify-content: center;
+  gap: 4cqw;
+}
+
+.closing-title {
+  font-size: 14cqw;
+  line-height: 1.05;
+}
+
+.polaroid {
+  position: relative;
+  width: 70cqw;
+  padding: 3.5cqw 3.5cqw 0;
+  background: #fff;
+  box-shadow:
+    0 2cqw 5cqw rgba(60, 40, 10, 0.25),
+    0 0.5cqw 1cqw rgba(60, 40, 10, 0.15);
+}
+
+/* Cinta adhesiva para que la foto parezca pegada al libro. */
+.polaroid::before {
+  content: '';
+  position: absolute;
+  top: -3cqw;
+  left: 50%;
+  width: 24cqw;
+  height: 7cqw;
+  transform: translateX(-50%) rotate(3deg);
+  background: rgba(236, 222, 190, 0.75);
+  box-shadow: 0 0.3cqw 0.8cqw rgba(0, 0, 0, 0.08);
+}
+
+.polaroid-photo {
+  aspect-ratio: 1 / 1.05;
+  overflow: hidden;
+  background: #f1ece3;
+}
+
+.polaroid-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.polaroid-photo .polaroid-fallback {
+  width: 100%;
+  height: 100%;
+  padding: 5cqw;
+}
+
+.polaroid-caption {
+  padding: 3cqw 0 3.5cqw;
+  font-size: 5cqw;
+  color: #555;
+}
+
+.closing-end {
+  font-size: 8cqw;
+  letter-spacing: 0.03em;
+}
+
+/* ---------- Movimiento reducido ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .swing,
+  .wag,
+  .nav-btn.nudge,
+  .gate-button,
+  .confirm-cta-inner {
+    animation: none;
+  }
+}
