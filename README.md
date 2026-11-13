@@ -4,6 +4,7 @@ Invitación de boda interactiva (React + Tailwind CSS + Lucide) con confirmació
 
 ## Flujo
 
+0. **Libro de cuentos animado** (`src/story/`): 8 páginas con paso de página 3D, ilustraciones que se dibujan solas (GSAP + DrawSVG) y corazones flotando. Se avanza con swipe, flechas o teclado; "Saltar historia" va directo a la confirmación. La página 7 ("Confirma tu Asistencia") y el botón "Confirmar" de la última página abren el flujo de abajo.
 1. Pantalla inicial con el botón "No" que escapa.
 2. Cuestionario de 4 preguntas.
 3. Formulario: nombre, ¿asistirá?, acompañantes y mensaje opcional.
@@ -44,5 +45,12 @@ Para probar también la función:
 ```bash
 npx vercel dev
 ```
+
+### Personalizar el cuento
+
+- Textos (fecha, salón, hora, obsequios, etc.): `src/story/content.js`.
+- Foto de la contraportada: copia la imagen a `public/foto.jpg` (se muestra en blanco y negro). Si no existe, aparece una ilustración en su lugar.
+- Ilustraciones: `src/story/illustrations.jsx`. Para usar tus propios SVG conserva la clase `draw-svg` y usa trazos sin relleno; los rellenos que aparecen al final llevan `fill-reveal`.
+- Tiempos de animación de cada página: funciones `build*` en `src/story/pages.jsx`.
 
 El máximo de acompañantes se ajusta en `MAX_COMPANIONS` (`src/App.jsx` y `api/rsvp.js`).
