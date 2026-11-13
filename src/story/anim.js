@@ -53,16 +53,18 @@ export function textIn(tl, targets, position, { stagger = 0.5, duration = 0.6, y
   return tl;
 }
 
-/** Efecto máquina de escribir sobre un elemento `.tw-live` (texto completo en data-text). */
-export function typewrite(tl, element, position, { speed = 0.045 } = {}) {
-  if (!element) return tl;
-  const text = element.dataset.text ?? '';
-  tl.fromTo(
-    element,
-    { text: '' },
-    { text, duration: Math.max(0.4, text.length * speed), ease: 'none' },
-    position
-  );
+/** Efecto máquina de escribir: escribe, línea por línea, cada `.tw-live` dentro de `container`. */
+export function typewrite(tl, container, position, { speed = 0.045 } = {}) {
+  if (!container) return tl;
+  container.querySelectorAll('.tw-live').forEach((line, index) => {
+    const text = line.dataset.text ?? '';
+    tl.fromTo(
+      line,
+      { text: '' },
+      { text, duration: Math.max(0.3, text.length * speed), ease: 'none' },
+      index === 0 ? position : '>0.1'
+    );
+  });
   return tl;
 }
 

@@ -29,9 +29,10 @@ export const STORY = {
   venue: {
     name: 'Salón de fiestas L & A',
     city: 'Chiná',
+    // Cada "\n" es un salto de línea.
     paragraph:
-      'Queremos festejar este día tan especial con las personas que más queremos, y tú eres una de ellas.',
-    dressCode: '¿Qué me pongo? Lo que quieras... ¡mientras puedas bailar!',
+      'Queremos festejar nuestra boda\ncon algo sencillo, íntimo y\ncon la gente que de verdad amamos.\nSi te llegó esto,\nconsidérate VIP en nuestro corazón:\nEres alguien importante para nosotros.',
+    dressCode: '¿Qué me pongo?\nLo que quieras, excepto traje.\nAquí venimos a disfrutar.',
     time: '2:00 pm',
   },
   gifts: {

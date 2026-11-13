@@ -17,16 +17,23 @@ import {
   WeddingDance,
 } from './illustrations.jsx';
 
-/** Texto que se escribe letra por letra sin mover el layout (el "fantasma" reserva el espacio). */
+/**
+ * Texto que se escribe letra por letra sin mover el layout (el "fantasma" reserva el espacio).
+ * Cada "\n" del texto es una línea que se escribe después de la anterior.
+ */
 function Typed({ text }) {
   return (
     <span className="tw">
-      <span className="tw-ghost" aria-hidden="true">
-        {text}
-      </span>
-      <span className="tw-live" data-text={text} aria-hidden="true">
-        {text}
-      </span>
+      {text.split('\n').map((line, index) => (
+        <span key={index} className="tw-line">
+          <span className="tw-ghost" aria-hidden="true">
+            {line}
+          </span>
+          <span className="tw-live" data-text={line} aria-hidden="true">
+            {line}
+          </span>
+        </span>
+      ))}
       <span className="sr-only">{text}</span>
     </span>
   );
@@ -91,7 +98,7 @@ function Beginning() {
 
 function buildBeginning(tl, root) {
   const q = gsap.utils.selector(root);
-  typewrite(tl, root.querySelector('.begin-intro .tw-live'), 0.3, { speed: 0.08 });
+  typewrite(tl, root.querySelector('.begin-intro'), 0.3, { speed: 0.08 });
   handwrite(tl, root.querySelector('.begin-names'), '>');
   q('.panel').forEach((panel) => {
     tl.fromTo(
@@ -194,15 +201,15 @@ function Venue() {
         <h2 className="venue-name">{venue.name}</h2>
         <p className="script red venue-city">{venue.city}</p>
       </header>
+      <p className="venue-paragraph">{venue.paragraph}</p>
       <div className="venue-row">
-        <p className="venue-paragraph">{venue.paragraph}</p>
         <div className="venue-stairs">
           <StairsCouple />
         </div>
+        <p className="venue-dress red">
+          <Typed text={venue.dressCode} />
+        </p>
       </div>
-      <p className="venue-dress red">
-        <Typed text={venue.dressCode} />
-      </p>
       <p className="venue-time">
         <span className="venue-time-label">a las</span> {venue.time}
       </p>
@@ -216,9 +223,9 @@ function Venue() {
 function buildVenue(tl, root) {
   const q = gsap.utils.selector(root);
   textIn(tl, [...q('.venue-name'), ...q('.venue-city')], 0.3, { stagger: 0.4 });
-  textIn(tl, q('.venue-paragraph'), '>', { duration: 0.8 });
-  drawSvg(tl, root.querySelector('.venue-stairs .draw-svg'), '>-0.2', { duration: 1.3 });
-  typewrite(tl, root.querySelector('.venue-dress .tw-live'), '>-0.1');
+  textIn(tl, q('.venue-paragraph'), '>', { duration: 0.9 });
+  drawSvg(tl, root.querySelector('.venue-stairs .draw-svg'), '>', { duration: 1.3 });
+  typewrite(tl, root.querySelector('.venue-dress'), '>-0.1');
   textIn(tl, q('.venue-time'), '>', { duration: 0.6 });
   drawSvg(tl, root.querySelector('.venue-toast .draw-svg'), '>-0.1', { duration: 1.3 });
 }
