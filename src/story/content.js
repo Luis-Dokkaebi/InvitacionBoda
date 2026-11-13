@@ -38,7 +38,7 @@ export const STORY = {
   gifts: {
     title: 'Obsequios',
     paragraph:
-      'Tu presencia es nuestro mejor regalo. Si además deseas tener un detalle con nosotros, tendremos lluvia de sobres el día del evento.',
+      'Cambiamos las cajas de regalo\npor lluvia de sobres.\n¡Prometemos darle un excelente uso!',
   },
   confirm: {
     title: 'Confirma tu Asistencia',

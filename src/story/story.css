@@ -643,7 +643,8 @@
 }
 
 .gifts-text {
-  max-width: 88%;
+  max-width: 92%;
+  white-space: pre-line;
   font-size: 5.4cqw;
   line-height: 1.25;
 }
