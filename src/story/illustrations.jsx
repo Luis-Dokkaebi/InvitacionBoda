@@ -275,6 +275,28 @@ export function LiftCouple() {
 
 /* ---------- Página 4 ---------- */
 
+/** Cinturón de campeón (diseño propio, estilo doodle) en la cintura del novio de WeddingDance. */
+function ChampionBelt() {
+  const strap = 'M52 114 Q73 111 94 114 L94 124 Q73 121 52 124 Z';
+  const plate = 'M60 111 L66 106 L80 106 L86 111 L86 129 L80 134 L66 134 L60 129 Z';
+  const inner = 'M63.5 112.5 L68 109.5 L78 109.5 L82.5 112.5 L82.5 127.5 L78 130.5 L68 130.5 L63.5 127.5 Z';
+  const sidePlates = 'M51 113.5 h7 v11 h-7 Z M88 113.5 h7 v11 h-7 Z';
+  return (
+    <g>
+      <path className="fill-reveal fill-dark" d={strap} />
+      <path className="fill-reveal fill-gold" d={sidePlates} />
+      <path className="fill-reveal fill-gold" d={plate} />
+      <path d={strap} />
+      <path d={sidePlates} />
+      <path d={plate} />
+      <path d={inner} />
+      <circle cx="54.5" cy="119" r="1" />
+      <circle cx="91.5" cy="119" r="1" />
+      <Heart x={73} y={119} s={0.75} />
+    </g>
+  );
+}
+
 export function WeddingDance() {
   return (
     <DrawSvg viewBox="0 0 200 180" label="Los novios bailando">
@@ -286,9 +308,9 @@ export function WeddingDance() {
       <path d="M66 62 L73 84 L80 62" />
       <path className="fill-reveal fill-red" d="M73 64 L70 68 L73 86 L76 68 Z" />
       <path className="accent" d="M73 64 L70 68 L73 86 L76 68 Z" />
-      <circle cx="73" cy="104" r="1.2" />
-      <circle cx="73" cy="116" r="1.2" />
+      <circle cx="73" cy="100" r="1.2" />
       <path d="M64 142 L62 172 M82 142 L84 172 M54 172 h9 M83 172 h9" />
+      <ChampionBelt />
       <path d="M56 70 C46 92 48 108 54 118" />
       {/* Manos unidas arriba */}
       <path d="M88 70 C98 56 100 40 103 26 M118 74 C112 56 108 40 107 26" />
