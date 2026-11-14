@@ -39,6 +39,11 @@
   font-weight: 400;
 }
 
+/* Mayúscula inicial legible (la "A" de Great Vibes parece una "a") */
+.story-stage .script-cap {
+  font-family: 'Alex Brush', var(--font-script);
+}
+
 /* ---------- Libro ---------- */
 
 .book-wrap {
@@ -646,6 +651,12 @@
   margin-left: 18cqw;
   font-size: 15cqw;
   line-height: 1.15;
+}
+
+/* "IMI" en mayúsculas no se lee en Great Vibes (parece "JMJ") */
+.story-stage .venue-city {
+  font-family: 'Allura', var(--font-script);
+  font-size: 17cqw;
 }
 
 .venue-paragraph {

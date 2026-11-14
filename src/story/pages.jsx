@@ -17,6 +17,17 @@ import {
   WeddingDance,
 } from './illustrations.jsx';
 
+/* La "A" mayúscula de Great Vibes parece minúscula: se dibuja con Alex Brush. */
+function CoupleName() {
+  const [first, ...rest] = STORY.couple;
+  return (
+    <>
+      <span className="script-cap">{first}</span>
+      {rest.join('')}
+    </>
+  );
+}
+
 /**
  * Texto que se escribe letra por letra sin mover el layout (el "fantasma" reserva el espacio).
  * Cada "\n" del texto es una línea que se escribe después de la anterior.
@@ -48,7 +59,9 @@ function Cover() {
       <h1 className="cover-title">{STORY.cover.title}</h1>
       <CoverCouple className="cover-art" />
       <p className="cover-byline">
-        {STORY.cover.byline} <span className="script red">{STORY.couple}</span>
+        {STORY.cover.byline} <span className="script red">
+          <CoupleName />
+        </span>
       </p>
     </div>
   );
@@ -79,7 +92,9 @@ function Beginning() {
         <p className="begin-intro">
           <Typed text={STORY.beginning.intro} />
         </p>
-        <h2 className="script red begin-names">{STORY.couple}</h2>
+        <h2 className="script red begin-names">
+          <CoupleName />
+        </h2>
       </header>
       <div className="panels">
         {STORY.beginning.panels.map((panel, index) => {
@@ -282,7 +297,9 @@ function Closing() {
   const { closing } = STORY;
   return (
     <div className="pg pg-closing">
-      <h2 className="script red closing-title">{STORY.couple}</h2>
+      <h2 className="script red closing-title">
+        <CoupleName />
+      </h2>
       <figure className="polaroid">
         <div className="polaroid-photo">
           {photoFailed ? (
