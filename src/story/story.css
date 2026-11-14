@@ -711,7 +711,7 @@
   width: 100%;
 }
 
-/* Página 6: obsequios */
+/* Página 6: obsequios, con lluvia de sobres que forma un corazón */
 .pg-gifts {
   justify-content: center;
   gap: 2cqw;
@@ -721,19 +721,59 @@
   flex: 1 1 0;
   min-height: 0;
   width: 100%;
-  max-height: 95cqw;
+  max-height: 80cqw;
 }
 
 .gifts-title {
-  font-size: 17cqw;
+  font-size: 14cqw;
   line-height: 1.05;
 }
 
 .gifts-text {
   max-width: 92%;
   white-space: pre-line;
-  font-size: 5.4cqw;
-  line-height: 1.25;
+  font-size: 5cqw;
+  line-height: 1.22;
+}
+
+/* Corazón de 7×6 sobres; cada sobre se coloca por su fila (--r) y columna (--c). */
+.gifts-heart {
+  --env-w: 8cqw;
+  --step-x: 8.4cqw;
+  --step-y: 5.9cqw;
+  position: relative;
+  flex-shrink: 0;
+  width: calc(var(--step-x) * 6 + var(--env-w));
+  height: calc(var(--step-y) * 5 + var(--env-w) * 0.7);
+  margin-top: 1cqw;
+}
+
+.envelope {
+  position: absolute;
+  left: calc(var(--c) * var(--step-x));
+  top: calc(var(--r) * var(--step-y));
+  width: var(--env-w);
+}
+
+.envelope-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  filter: drop-shadow(0 0.4cqw 0.6cqw rgba(70, 45, 15, 0.25));
+}
+
+.envelope-svg :is(rect, path) {
+  stroke: var(--color-text-main);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.envelope-svg .envelope-seal {
+  fill: var(--color-accent-red);
+  stroke: var(--color-accent-red);
+  stroke-width: 3;
 }
 
 /* Página 7: toda la página es el CTA */
