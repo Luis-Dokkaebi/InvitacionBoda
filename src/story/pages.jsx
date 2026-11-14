@@ -157,7 +157,6 @@ function Proposal() {
   const { proposal } = STORY;
   return (
     <div className="pg pg-propose">
-      <p className="propose-intro">{proposal.intro}</p>
       <div className="propose-art">
         <ProposalScene />
       </div>
@@ -175,8 +174,7 @@ function Proposal() {
 
 function buildProposal(tl, root, api) {
   const q = gsap.utils.selector(root);
-  textIn(tl, q('.propose-intro'), 0.3, { duration: 0.8 });
-  revealPixels(tl, root.querySelector('.propose-art .pixel-svg'), '>', { duration: 1.4 });
+  revealPixels(tl, root.querySelector('.propose-art .pixel-svg'), 0.3, { duration: 1.4 });
   q('.dialog').forEach((dialog) => {
     textIn(tl, dialog, '+=0.3', { duration: 0.4 });
     typewrite(tl, dialog, '>', { speed: 0.07 });

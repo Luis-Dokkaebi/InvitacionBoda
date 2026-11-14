@@ -66,11 +66,11 @@ export function CoverCouple({ className }) {
   return <PixelArt art={COVER} label="Los novios abrazados con un ramo" className={className} />;
 }
 
-/* ---------- Página 2: viñetas ---------- */
+/* ---------- Página 2: viñetas (ropa casual hasta la página de la fecha) ---------- */
 
 const COFFEE = scene(40, 26, (p) => {
-  p.sprite(SP.groom, 2, 8, { to: 13 });
-  p.sprite(SP.bride, 24, 9, { to: 12 });
+  p.sprite(SP.groomCasual, 2, 8, { to: 13 });
+  p.sprite(SP.brideCasual, 24, 9, { to: 12 });
   p.sprite(SP.mug, 14, 17);
   p.sprite(SP.mug, 22, 17, { flip: true });
   p.rect('D', 0, 21, 40, 2);
@@ -89,8 +89,8 @@ export function CoffeeScene() {
 }
 
 const SELFIE = scene(40, 26, (p) => {
-  p.sprite(SP.groom, 6, 8, { to: 18 });
-  p.sprite(SP.bride, 16, 9, { to: 17 });
+  p.sprite(SP.groomCasual, 6, 8, { to: 18 });
+  p.sprite(SP.brideCasual, 16, 9, { to: 17 });
   p.line('S', 27, 18, 31, 10);
   p.line('S', 28, 18, 32, 10);
   p.sprite(SP.phone, 30, 3);
@@ -108,8 +108,8 @@ export function SelfieScene() {
 }
 
 const DOG = scene(42, 27, (p) => {
-  p.sprite(SP.groom, 1, 7);
-  p.sprite(SP.bride, 12, 8);
+  p.sprite(SP.groomCasual, 1, 7);
+  p.sprite(SP.brideCasual, 12, 8);
   p.sprite(SP.dog, 26, 17);
   p.rect('d', 23, 17, 3, 1);
   p.dot('A', [23, 18], [25, 18]);
@@ -125,8 +125,8 @@ export function DogScene() {
 }
 
 const KIDS = scene(46, 27, (p) => {
-  p.sprite(SP.groom, 1, 7);
-  p.sprite(SP.bride, 32, 8);
+  p.sprite(SP.groomCasual, 1, 7);
+  p.sprite(SP.brideCasual, 32, 8);
   p.line('S', 11, 19, 13, 21);
   p.line('S', 33, 20, 35, 18);
   p.rect('G', 0, 26, 46, 1);
@@ -156,13 +156,13 @@ const RUN = scene(56, 30, (p) => {
   // Dos cuadros que se alternan: así corren de verdad.
   p.layer('runners run-a');
   p.sprite(SP.heartSmall, 24, 2);
-  p.sprite(SP.groomSide, 14, 9);
-  p.sprite(SP.brideSide, 28, 9);
+  p.sprite(SP.groomSideCasual, 14, 9);
+  p.sprite(SP.brideSideCasual, 28, 9);
   p.line('S', 23, 18, 28, 18);
   p.layer('runners run-b');
   p.sprite(SP.heartSmall, 24, 1);
-  p.sprite(SP.groomSideB, 14, 8);
-  p.sprite(SP.brideSideB, 28, 8);
+  p.sprite(SP.groomSideCasualB, 14, 8);
+  p.sprite(SP.brideSideCasualB, 28, 8);
   p.line('S', 23, 17, 28, 17);
 });
 
@@ -171,9 +171,9 @@ export function RunningCouple() {
 }
 
 const LIFT = scene(48, 40, (p) => {
-  p.sprite(SP.groom, 18, 19);
-  p.rect('N', 18, 16, 1, 13);
-  p.rect('N', 29, 16, 1, 13);
+  p.sprite(SP.groomCasual, 18, 19);
+  p.rect('C', 18, 16, 1, 13);
+  p.rect('C', 29, 16, 1, 13);
   p.dot('S', [18, 15], [29, 15]);
   p.rect('G', 0, 38, 48, 1);
   p.rect('D', 0, 39, 48, 1);
@@ -182,7 +182,7 @@ const LIFT = scene(48, 40, (p) => {
   p.sprite(SP.heart, 36, 4);
   // Ella sube y baja en sus brazos
   p.layer('bob');
-  p.sprite(SP.bride, 17, 1, { to: 14 });
+  p.sprite(SP.brideCasual, 17, 1, { to: 14 });
   p.line('S', 19, 10, 16, 5);
   p.line('S', 28, 10, 31, 5);
 });
@@ -204,9 +204,9 @@ const PROPOSAL = scene(48, 36, (p) => {
   p.rect('D', 0, 33, 48, 3);
   p.dot('d', [5, 34], [16, 35], [30, 34], [42, 35]);
   // Él, de rodillas; ella, frente a él y sonrojada
-  p.sprite(SP.groomKneel, 10, 18);
+  p.sprite(SP.groomKneelCasual, 10, 18);
   p.dot('S', [19, 27], [20, 27]);
-  p.sprite(SP.brideSide, 29, 16, { flip: true });
+  p.sprite(SP.brideSideCasual, 29, 16, { flip: true });
   p.dot('P', [32, 20]);
   p.layer('float');
   p.sprite(SP.heart, 21, 3);
