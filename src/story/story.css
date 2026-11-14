@@ -39,6 +39,11 @@
   font-weight: 400;
 }
 
+/* Mayúscula inicial legible (la "A" de Great Vibes parece una "a") */
+.story-stage .script-cap {
+  font-family: 'Alex Brush', var(--font-script);
+}
+
 /* ---------- Libro ---------- */
 
 .book-wrap {
