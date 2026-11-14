@@ -4,7 +4,7 @@ Invitación de boda interactiva (React + Tailwind CSS + Lucide) con confirmació
 
 ## Flujo
 
-0. **Libro de cuentos animado** (`src/story/`): 8 páginas con paso de página 3D, estilo pixel art de videojuego de 8 bits: los dibujos aparecen fila por fila (GSAP) y flotan corazones pixelados. Se avanza con swipe, flechas o teclado; "Saltar historia" va directo a la confirmación. La página 7 ("Confirma tu Asistencia") y el botón "Confirmar" de la última página abren el flujo de abajo.
+0. **Libro de cuentos animado** (`src/story/`): 9 páginas con paso de página 3D, estilo pixel art de videojuego de 8 bits: los dibujos aparecen fila por fila (GSAP), los personajes rebotan, parpadean y corren con animaciones en bucle, y flotan corazones pixelados. La página 4 es la propuesta: Armando le ofrece a Sabina un anillo dentro de una esfera roja y blanca ("¿Me dejas atraparte?"). Se avanza con swipe, flechas o teclado; "Saltar historia" va directo a la confirmación. La página 8 ("Confirma tu Asistencia") y el botón "Confirmar" de la última página abren el flujo de abajo.
 1. Pantalla inicial con el botón "No" que escapa.
 2. Cuestionario de 4 preguntas.
 3. Formulario: nombre, ¿asistirá?, acompañantes y mensaje opcional.

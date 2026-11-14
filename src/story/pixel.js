@@ -34,6 +34,9 @@ export const PALETTE = {
   L: '#7fd3ff', // pantalla del teléfono
   Q: '#5a3f8f', // pista de baile
   q: '#43306e',
+  u: '#ff6b6b', // atardecer (arriba)
+  U: '#ff9f43', // atardecer (medio)
+  Z: '#ffd56b', // atardecer (horizonte)
 };
 
 /* ---------- Sprites ---------- */
@@ -116,6 +119,60 @@ export const SPRITES = {
     'wwwwwwwwwwww',
     '.S.......S..',
   ],
+  // Segundo cuadro de la carrera: piernas juntas.
+  groomSideB: [
+    '..HHHH.....',
+    '.HHHHHH....',
+    '.HHHSSSS...',
+    '.HHSSSKS...',
+    '..SSSSSSS..',
+    '..SSSSMS...',
+    '...SSS.....',
+    '..NNWWN....',
+    '.NNNNRNN...',
+    'SNNNNNNNS..',
+    '.NNNNNNN...',
+    '..NNNNN....',
+    '..NN.NN....',
+    '..NN.NN....',
+    '..NN.NN....',
+    '..KK.KK....',
+  ],
+  brideSideB: [
+    '..VVhhh.....',
+    '.VVhhhhh....',
+    '.VhhhSSSS...',
+    '.VhhSSSKS...',
+    'VVhhSSSSSS..',
+    'VV.hSSSMS...',
+    'VV..SSS.....',
+    'V..WWWWW....',
+    '..WWWWWWW...',
+    '.SWWWWWWWS..',
+    '..WWWWWWW...',
+    '..WWWWWWWW..',
+    '.WWWWWWWWWW.',
+    'WWWWWWWWWWWW',
+    'wwwwwwwwwwww',
+    '...S...S....',
+  ],
+  // De rodillas, mirando a la derecha (la propuesta).
+  groomKneel: [
+    '..HHHH.....',
+    '.HHHHHH....',
+    '.HHHSSSS...',
+    '.HHSSSKS...',
+    '..SSSSSSS..',
+    '..SSSSMS...',
+    '...SSS.....',
+    '..NNWWN....',
+    '.NNNNRNN...',
+    'SNNNNNNNS..',
+    '.NNNNNNN...',
+    '..NNNNNNN..',
+    '.NNN...NN..',
+    'KKKN...KK..',
+  ],
   groomBack: [
     '..HHHHHH..',
     '.HHHHHHHH.',
@@ -192,6 +249,19 @@ export const SPRITES = {
   phone: ['KKKK', 'KLLK', 'KLLK', 'KLLK', 'KLLK', 'KKKK'],
   mug: ['WWW.', 'WWWW', 'WWWW', 'WWW.'],
   note: ['.YY', '.Y.', '.Y.', 'YY.', 'YY.'],
+  // Esfera roja y blanca abierta, con el anillo dentro.
+  ringBall: [
+    '..RRR..',
+    '.RRRRR.',
+    'RRWRRRR',
+    'KKKKKKK',
+    '...L...',
+    '..Y.Y..',
+    'WWWYWWW',
+    'WWWWWWW',
+    '.WWWWW.',
+    '..WWW..',
+  ],
 };
 
 /* ---------- Composición ---------- */

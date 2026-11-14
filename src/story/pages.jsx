@@ -9,6 +9,7 @@ import {
   HeartDivider,
   KidsScene,
   LiftCouple,
+  ProposalScene,
   RunningCouple,
   SelfieScene,
   StairsCouple,
@@ -150,7 +151,41 @@ function buildDecision(tl, root, api) {
   tl.call(() => api.burst(lift, 14), [], '+=0.9');
 }
 
-/* ---------- Página 4: La Fecha ---------- */
+/* ---------- Página 4: La Propuesta ---------- */
+
+function Proposal() {
+  const { proposal } = STORY;
+  return (
+    <div className="pg pg-propose">
+      <p className="propose-intro">{proposal.intro}</p>
+      <div className="propose-art">
+        <ProposalScene />
+      </div>
+      {[proposal.question, proposal.answer].map((line, index) => (
+        <div key={line.name} className={`dialog dialog-${index}`}>
+          <span className="dialog-name">{line.name}</span>
+          <p className={`dialog-text ${index ? 'pink' : ''}`}>
+            <Typed text={line.text} />
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function buildProposal(tl, root, api) {
+  const q = gsap.utils.selector(root);
+  textIn(tl, q('.propose-intro'), 0.3, { duration: 0.8 });
+  revealPixels(tl, root.querySelector('.propose-art .pixel-svg'), '>', { duration: 1.4 });
+  q('.dialog').forEach((dialog) => {
+    textIn(tl, dialog, '+=0.3', { duration: 0.4 });
+    typewrite(tl, dialog, '>', { speed: 0.07 });
+  });
+  // Lluvia de corazones cuando ella dice que sí.
+  tl.call(() => api.burst(root.querySelector('.propose-art')), [], '>');
+}
+
+/* ---------- Página 5: La Fecha ---------- */
 
 function DatePage() {
   return (
@@ -183,7 +218,7 @@ function buildDate(tl, root) {
   revealPixels(tl, root.querySelector('.heart-divider'), '<0.3', { duration: 0.9 });
 }
 
-/* ---------- Página 5: El Escenario ---------- */
+/* ---------- Página 6: El Escenario ---------- */
 
 function Venue() {
   const { venue } = STORY;
@@ -222,7 +257,7 @@ function buildVenue(tl, root) {
   revealPixels(tl, root.querySelector('.venue-toast .pixel-svg'), '>-0.1', { duration: 1.3 });
 }
 
-/* ---------- Página 6: Los Obsequios ---------- */
+/* ---------- Página 7: Los Obsequios ---------- */
 
 function Gifts() {
   return (
@@ -243,7 +278,7 @@ function buildGifts(tl, root) {
   textIn(tl, q('.gifts-text'), '>-0.2', { duration: 0.9 });
 }
 
-/* ---------- Página 7: La Confirmación ---------- */
+/* ---------- Página 8: La Confirmación ---------- */
 
 function Confirm({ onConfirm }) {
   return (
@@ -267,7 +302,7 @@ function buildConfirm(tl, root) {
   textIn(tl, q('.confirm-cta'), '>', { duration: 0.6 });
 }
 
-/* ---------- Página 8: El Cierre ---------- */
+/* ---------- Página 9: El Cierre ---------- */
 
 function Closing() {
   const [photoFailed, setPhotoFailed] = useState(false);
@@ -307,11 +342,12 @@ function buildClosing(tl, root, api) {
   textIn(tl, q('.closing-end'), '>+0.2', { duration: 1 });
 }
 
-/** Las 8 páginas del libro, en orden. `hearts` = corazones flotando en bucle en esa página. */
+/** Las 9 páginas del libro, en orden. `hearts` = corazones flotando en bucle en esa página. */
 export const PAGES = [
   { id: 'portada', label: 'La portada', Component: Cover, build: buildCover, hearts: true },
   { id: 'inicio', label: 'El inicio', Component: Beginning, build: buildBeginning },
   { id: 'decision', label: 'La decisión', Component: Decision, build: buildDecision },
+  { id: 'propuesta', label: 'La propuesta', Component: Proposal, build: buildProposal },
   { id: 'fecha', label: 'La fecha', Component: DatePage, build: buildDate },
   { id: 'escenario', label: 'El escenario', Component: Venue, build: buildVenue },
   { id: 'obsequios', label: 'Los obsequios', Component: Gifts, build: buildGifts },

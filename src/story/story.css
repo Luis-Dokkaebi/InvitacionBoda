@@ -141,6 +141,7 @@
 .page-content {
   position: absolute;
   inset: 0;
+  z-index: 1;
   container-type: size;
 }
 
@@ -454,6 +455,123 @@
   }
 }
 
+/* Animaciones en bucle de los dibujos (capas con nombre de illustrations.jsx).
+   Las unidades "px" de un transform dentro del SVG son píxeles del dibujo. */
+.pixel-svg .float {
+  transform-box: view-box;
+  animation: px-float 1.2s steps(1) infinite;
+}
+
+.pixel-svg .float-late {
+  animation-delay: -0.6s;
+}
+
+.pixel-svg .bob {
+  transform-box: view-box;
+  animation: px-float 0.8s steps(1) infinite;
+}
+
+.pixel-svg .blink {
+  animation: px-blink 4s steps(1) infinite;
+}
+
+.pixel-svg .bob.blink {
+  animation:
+    px-float 0.8s steps(1) infinite,
+    px-blink 4s steps(1) infinite;
+}
+
+.pixel-svg .twinkle {
+  animation: px-twinkle 0.9s steps(1) infinite;
+}
+
+.pixel-svg .run-a {
+  animation: px-frame-a 0.36s steps(1) infinite;
+}
+
+.pixel-svg .run-b {
+  animation: px-frame-b 0.36s steps(1) infinite;
+}
+
+/* La esfera del anillo se sacude tres veces, como cuando se atrapa a alguien. */
+.pixel-svg .wobble {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: px-wobble 2.8s steps(1) infinite;
+}
+
+.pixel-svg .pop {
+  animation: px-twinkle 0.5s steps(1) infinite;
+}
+
+@keyframes px-float {
+  50% {
+    transform: translateY(-1px);
+  }
+}
+
+@keyframes px-blink {
+  0%,
+  93% {
+    opacity: 0;
+  }
+  94%,
+  98% {
+    opacity: 1;
+  }
+}
+
+@keyframes px-twinkle {
+  50% {
+    opacity: 0.15;
+  }
+}
+
+@keyframes px-frame-a {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes px-frame-b {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes px-wobble {
+  0%,
+  45%,
+  100% {
+    transform: rotate(0);
+  }
+  5%,
+  20%,
+  35% {
+    transform: rotate(-14deg);
+  }
+  12%,
+  27%,
+  42% {
+    transform: rotate(14deg);
+  }
+}
+
+/* Las estrellas del fondo de cada página titilan. */
+.page-front::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--stars);
+  background-position: 60px 37px;
+  pointer-events: none;
+  z-index: 0;
+  animation: px-twinkle 2.4s steps(1) infinite;
+}
+
 /* Máquina de escribir sin saltos de layout. */
 .tw {
   position: relative;
@@ -608,7 +726,63 @@
   text-shadow: 0.6cqw 0.6cqw 0 #6b1030;
 }
 
-/* Página 4: la fecha */
+/* Página 4: la propuesta (con cuadros de diálogo de RPG) */
+.pg-propose {
+  gap: 3cqw;
+}
+
+.propose-intro {
+  font-size: 4.8cqw;
+  color: var(--teal);
+  text-wrap: balance;
+}
+
+.propose-art {
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+}
+
+.dialog {
+  position: relative;
+  align-self: stretch;
+  margin: 2cqw 0.8cqw 0;
+  padding: 3.4cqw 3.4cqw 2.6cqw;
+  text-align: left;
+  background: rgba(17, 17, 42, 0.92);
+  box-shadow:
+    0 -0.8cqw 0 0 var(--frame),
+    0 0.8cqw 0 0 var(--frame),
+    -0.8cqw 0 0 0 var(--frame),
+    0.8cqw 0 0 0 var(--frame);
+}
+
+.dialog-1 {
+  text-align: right;
+}
+
+.dialog-name {
+  position: absolute;
+  top: -2.4cqw;
+  left: 3cqw;
+  padding: 0.8cqw 1.6cqw;
+  background: var(--gold);
+  color: #1b1b3a;
+  font-family: var(--font-px);
+  font-size: 2.6cqw;
+}
+
+.dialog-1 .dialog-name {
+  left: auto;
+  right: 3cqw;
+}
+
+.dialog-text {
+  font-size: 5cqw;
+  line-height: 1.2;
+}
+
+/* Página 5: la fecha */
 .pg-date {
   justify-content: center;
   gap: 3cqw;
@@ -879,7 +1053,20 @@
   .gate-button,
   .confirm-cta-inner,
   .story-hint,
-  .closing-end::after {
+  .closing-end::after,
+  .page-front::after,
+  .pixel-svg .float,
+  .pixel-svg .bob,
+  .pixel-svg .blink,
+  .pixel-svg .twinkle,
+  .pixel-svg .run-a,
+  .pixel-svg .wobble,
+  .pixel-svg .pop {
     animation: none;
+  }
+
+  .pixel-svg .run-b,
+  .pixel-svg .blink {
+    opacity: 0;
   }
 }
