@@ -39,6 +39,8 @@ export const PALETTE = {
   Z: '#ffd56b', // atardecer (horizonte)
   C: '#2e8b57', // camisa casual de él
   I: '#f06292', // blusa casual de ella
+  e: '#ffc2d1', // sobre rosa
+  E: '#e07a95',
 };
 
 /* ---------- Sprites ---------- */
@@ -381,6 +383,8 @@ export const SPRITES = {
   phone: ['KKKK', 'KLLK', 'KLLK', 'KLLK', 'KLLK', 'KKKK'],
   mug: ['WWW.', 'WWWW', 'WWWW', 'WWW.'],
   note: ['.YY', '.Y.', '.Y.', 'YY.', 'YY.'],
+  // Sobre con la solapa en V y un sello de corazón (B = papel, b = pliegues).
+  envelope: ['KKKKKKKKK', 'KbBBBBBbK', 'KBbBBBbBK', 'KBBbRbBBK', 'KBBBBBBBK', 'KKKKKKKKK'],
   // Esfera roja y blanca abierta, con el anillo dentro.
   ringBall: [
     '..RRR..',

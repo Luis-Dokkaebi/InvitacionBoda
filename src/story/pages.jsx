@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { STORY } from './content.js';
+import { SPRITES } from './pixel.js';
 import { gsap, handwrite, revealPixels, textIn, typewrite } from './anim.js';
 import {
   CanPhones,
   CoffeeScene,
   CoverCouple,
   DogScene,
+  Envelope,
   HeartDivider,
   KidsScene,
   LiftCouple,
@@ -257,6 +259,11 @@ function buildVenue(tl, root) {
 
 /* ---------- Página 7: Los Obsequios ---------- */
 
+// Un sobre por cada píxel del corazón de 7×6: así la lluvia de sobres termina formando un corazón.
+const HEART_CELLS = SPRITES.heart.flatMap((row, r) =>
+  [...row].flatMap((cell, c) => (cell === '.' ? [] : [{ r, c }]))
+);
+
 function Gifts() {
   return (
     <div className="pg pg-gifts">
@@ -265,15 +272,44 @@ function Gifts() {
       </div>
       <h2 className="px-title gold gifts-title">{STORY.gifts.title}</h2>
       <p className="gifts-text">{STORY.gifts.paragraph}</p>
+      <div className="gifts-heart" aria-hidden="true">
+        {HEART_CELLS.map(({ r, c }) => (
+          <span key={`${r}-${c}`} className="envelope" style={{ '--r': r, '--c': c }}>
+            <Envelope variant={(r + c) % 3} />
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
 
-function buildGifts(tl, root) {
+function buildGifts(tl, root, api) {
   const q = gsap.utils.selector(root);
   revealPixels(tl, root.querySelector('.gifts-art .pixel-svg'), 0.3);
   textIn(tl, q('.gifts-title'), '>-0.2', { duration: 0.8 });
   textIn(tl, q('.gifts-text'), '>-0.2', { duration: 0.9 });
+  // Lluvia de sobres: caen desde arriba de la página, ladeados, y aterrizan en su lugar del corazón.
+  tl.fromTo(
+    q('.envelope'),
+    {
+      autoAlpha: 1,
+      yPercent: (i) => -3000 - (i % 5) * 180,
+      xPercent: () => gsap.utils.random(-250, 250),
+      rotation: () => gsap.utils.random(-35, 35),
+    },
+    {
+      yPercent: 0,
+      xPercent: 0,
+      rotation: 0,
+      duration: 1.3,
+      ease: 'bounce.out',
+      stagger: { each: 0.09, from: 'random' },
+    },
+    '>-0.4'
+  );
+  // El corazón late dos veces y suelta corazones.
+  tl.to(q('.gifts-heart'), { scale: 1.08, duration: 0.18, ease: 'steps(2)', yoyo: true, repeat: 3 }, '>');
+  tl.call(() => api.burst(root.querySelector('.gifts-heart'), 16), [], '<');
 }
 
 /* ---------- Página 8: La Confirmación ---------- */
