@@ -396,6 +396,19 @@ export function SwingsCouple() {
   );
 }
 
+/* Sobre de la lluvia de sobres (página 6): papel de color, solapa en V y sello de corazón. */
+const ENVELOPE_PAPER = ['#ffffff', '#f9d9d4', '#fbe9c6'];
+
+export function Envelope({ variant = 0 }) {
+  return (
+    <svg className="envelope-svg" viewBox="0 0 40 28" aria-hidden="true">
+      <rect x="2" y="2" width="36" height="24" rx="2.5" fill={ENVELOPE_PAPER[variant % 3]} />
+      <path d="M3.5 4 L20 16 L36.5 4 M3.5 25 L15 13.5 M36.5 25 L25 13.5" fill="none" />
+      <path d={HEART_PATH} transform="translate(20 15.5) scale(0.42)" className="envelope-seal" />
+    </svg>
+  );
+}
+
 /* ---------- Página 7 ---------- */
 
 export function CanPhones() {
