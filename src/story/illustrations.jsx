@@ -340,6 +340,26 @@ export function SwingsCouple() {
   return <PixelArt art={SWINGS} label="La pareja de espaldas en los columpios" />;
 }
 
+/* Sobres de la lluvia de la página de obsequios: blanco, rosa y dorado. */
+const ENVELOPE_COLORS = [
+  ['W', 'w'],
+  ['e', 'E'],
+  ['Y', 'y'],
+];
+const ENVELOPES = ENVELOPE_COLORS.map(([paper, fold]) =>
+  scene(9, 6, (p) =>
+    p.sprite(
+      SP.envelope.map((row) => row.replaceAll('B', paper).replaceAll('b', fold)),
+      0,
+      0
+    )
+  )
+);
+
+export function Envelope({ variant = 0 }) {
+  return <PixelArt art={ENVELOPES[variant % ENVELOPES.length]} />;
+}
+
 /* ---------- Página de confirmación ---------- */
 
 const CANS = scene(56, 26, (p) => {
