@@ -1,6 +1,6 @@
-import { useId, useState } from 'react';
+import { useState } from 'react';
 import { STORY } from './content.js';
-import { gsap, drawSvg, handwrite, textIn, typewrite } from './anim.js';
+import { gsap, handwrite, revealPixels, textIn, typewrite } from './anim.js';
 import {
   CanPhones,
   CoffeeScene,
@@ -9,6 +9,7 @@ import {
   HeartDivider,
   KidsScene,
   LiftCouple,
+  ProposalScene,
   RunningCouple,
   SelfieScene,
   StairsCouple,
@@ -16,17 +17,6 @@ import {
   ToastCouple,
   WeddingDance,
 } from './illustrations.jsx';
-
-/* La "A" mayúscula de Great Vibes parece minúscula: se dibuja con Alex Brush. */
-function CoupleName() {
-  const [first, ...rest] = STORY.couple;
-  return (
-    <>
-      <span className="script-cap">{first}</span>
-      {rest.join('')}
-    </>
-  );
-}
 
 /**
  * Texto que se escribe letra por letra sin mover el layout (el "fantasma" reserva el espacio).
@@ -59,9 +49,7 @@ function Cover() {
       <h1 className="cover-title">{STORY.cover.title}</h1>
       <CoverCouple className="cover-art" />
       <p className="cover-byline">
-        {STORY.cover.byline} <span className="script red">
-          <CoupleName />
-        </span>
+        {STORY.cover.byline} <span className="px-title gold">{STORY.couple}</span>
       </p>
     </div>
   );
@@ -76,7 +64,7 @@ function buildCover(tl, root, api) {
     { autoAlpha: 1, scale: 1, duration: 0.9, ease: 'back.out(2)' },
     1.1
   );
-  drawSvg(tl, root.querySelector('.cover-art'), '>');
+  revealPixels(tl, root.querySelector('.cover-art'), '>');
   tl.call(api.startHearts);
   textIn(tl, q('.cover-byline'), '+=0.2', { duration: 0.9 });
 }
@@ -92,9 +80,7 @@ function Beginning() {
         <p className="begin-intro">
           <Typed text={STORY.beginning.intro} />
         </p>
-        <h2 className="script red begin-names">
-          <CoupleName />
-        </h2>
+        <h2 className="px-title gold begin-names">{STORY.couple}</h2>
       </header>
       <div className="panels">
         {STORY.beginning.panels.map((panel, index) => {
@@ -122,7 +108,7 @@ function buildBeginning(tl, root) {
       { autoAlpha: 1, scale: 1, duration: 0.4, ease: 'power2.out' },
       '+=0.15'
     );
-    drawSvg(tl, panel.querySelector('.draw-svg'), '<0.1', { duration: 1.3 });
+    revealPixels(tl, panel.querySelector('.pixel-svg'), '<0.1', { duration: 1.3 });
     textIn(tl, panel.querySelector('figcaption'), '>-0.25', { duration: 0.5 });
   });
 }
@@ -139,7 +125,7 @@ function Decision() {
       </div>
       <div className="decision-lines">
         {lines.map((line, index) => (
-          <p key={line} className={index === lines.length - 1 ? 'decision-final red' : undefined}>
+          <p key={line} className={index === lines.length - 1 ? 'decision-final pink' : undefined}>
             {line}
           </p>
         ))}
@@ -154,31 +140,57 @@ function Decision() {
 function buildDecision(tl, root, api) {
   const q = gsap.utils.selector(root);
   textIn(tl, q('.decision-top'), 0.3, { duration: 0.8 });
-  drawSvg(tl, root.querySelector('.decision-run .draw-svg'), '>-0.1', { duration: 1.4 });
+  revealPixels(tl, root.querySelector('.decision-run .pixel-svg'), '>-0.1', { duration: 1.4 });
   // Movimiento sutil de la pareja hacia el centro mientras se dibuja.
-  tl.fromTo(q('.runners'), { x: -34 }, { x: 0, duration: 2.4, ease: 'power1.out' }, '<');
+  tl.fromTo(q('.runners'), { x: -9 }, { x: 0, duration: 2.4, ease: 'steps(9)' }, '<');
   textIn(tl, q('.decision-lines p'), '>-0.6', { stagger: 0.5 });
   const lift = root.querySelector('.decision-lift');
-  drawSvg(tl, lift.querySelector('.draw-svg'), '>-0.1', { duration: 1.3 });
+  revealPixels(tl, lift.querySelector('.pixel-svg'), '>-0.1', { duration: 1.3 });
   // Lluvia de corazones rojos desde la ilustración del abrazo.
   tl.call(() => api.burst(lift), [], '>-0.3');
   tl.call(() => api.burst(lift, 14), [], '+=0.9');
 }
 
-/* ---------- Página 4: La Fecha ---------- */
+/* ---------- Página 4: La Propuesta ---------- */
+
+function Proposal() {
+  const { proposal } = STORY;
+  return (
+    <div className="pg pg-propose">
+      <p className="propose-intro">{proposal.intro}</p>
+      <div className="propose-art">
+        <ProposalScene />
+      </div>
+      {[proposal.question, proposal.answer].map((line, index) => (
+        <div key={line.name} className={`dialog dialog-${index}`}>
+          <span className="dialog-name">{line.name}</span>
+          <p className={`dialog-text ${index ? 'pink' : ''}`}>
+            <Typed text={line.text} />
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function buildProposal(tl, root, api) {
+  const q = gsap.utils.selector(root);
+  textIn(tl, q('.propose-intro'), 0.3, { duration: 0.8 });
+  revealPixels(tl, root.querySelector('.propose-art .pixel-svg'), '>', { duration: 1.4 });
+  q('.dialog').forEach((dialog) => {
+    textIn(tl, dialog, '+=0.3', { duration: 0.4 });
+    typewrite(tl, dialog, '>', { speed: 0.07 });
+  });
+  // Lluvia de corazones cuando ella dice que sí.
+  tl.call(() => api.burst(root.querySelector('.propose-art')), [], '>');
+}
+
+/* ---------- Página 5: La Fecha ---------- */
 
 function DatePage() {
-  const arcId = useId();
   return (
     <div className="pg pg-date">
-      <svg className="curved-title" viewBox="0 0 300 96" role="img" aria-label={STORY.date.title}>
-        <path id={arcId} d="M18 88 Q150 -4 282 88" fill="none" />
-        <text>
-          <textPath href={`#${arcId}`} startOffset="50%" textAnchor="middle">
-            {STORY.date.title}
-          </textPath>
-        </text>
-      </svg>
+      <h2 className="px-title gold date-title">{STORY.date.title}</h2>
       <div className="date-art">
         <WeddingDance />
       </div>
@@ -191,22 +203,22 @@ function DatePage() {
 function buildDate(tl, root) {
   const q = gsap.utils.selector(root);
   tl.fromTo(
-    q('.curved-title'),
+    q('.date-title'),
     { autoAlpha: 0, y: -90 },
     { autoAlpha: 1, y: 0, duration: 1.1, ease: 'bounce.out' },
     0.3
   );
-  drawSvg(tl, root.querySelector('.date-art .draw-svg'), '>-0.2');
+  revealPixels(tl, root.querySelector('.date-art .pixel-svg'), '>-0.2');
   tl.fromTo(
     q('.date-text'),
     { autoAlpha: 0, scale: 0.6 },
     { autoAlpha: 1, scale: 1, duration: 0.9, ease: 'back.out(1.6)' },
     '>'
   );
-  drawSvg(tl, root.querySelector('.heart-divider'), '<0.3', { duration: 0.9 });
+  revealPixels(tl, root.querySelector('.heart-divider'), '<0.3', { duration: 0.9 });
 }
 
-/* ---------- Página 5: El Escenario ---------- */
+/* ---------- Página 6: El Escenario ---------- */
 
 function Venue() {
   const { venue } = STORY;
@@ -214,14 +226,14 @@ function Venue() {
     <div className="pg pg-venue">
       <header className="venue-head">
         <h2 className="venue-name">{venue.name}</h2>
-        <p className="script red venue-city">{venue.city}</p>
+        <p className="px-title gold venue-city">{venue.city}</p>
       </header>
       <p className="venue-paragraph">{venue.paragraph}</p>
       <div className="venue-row">
         <div className="venue-stairs">
           <StairsCouple />
         </div>
-        <p className="venue-dress red">
+        <p className="venue-dress pink">
           <Typed text={venue.dressCode} />
         </p>
       </div>
@@ -239,13 +251,13 @@ function buildVenue(tl, root) {
   const q = gsap.utils.selector(root);
   textIn(tl, [...q('.venue-name'), ...q('.venue-city')], 0.3, { stagger: 0.4 });
   textIn(tl, q('.venue-paragraph'), '>', { duration: 0.9 });
-  drawSvg(tl, root.querySelector('.venue-stairs .draw-svg'), '>', { duration: 1.3 });
+  revealPixels(tl, root.querySelector('.venue-stairs .pixel-svg'), '>', { duration: 1.3 });
   typewrite(tl, root.querySelector('.venue-dress'), '>-0.1');
   textIn(tl, q('.venue-time'), '>', { duration: 0.6 });
-  drawSvg(tl, root.querySelector('.venue-toast .draw-svg'), '>-0.1', { duration: 1.3 });
+  revealPixels(tl, root.querySelector('.venue-toast .pixel-svg'), '>-0.1', { duration: 1.3 });
 }
 
-/* ---------- Página 6: Los Obsequios ---------- */
+/* ---------- Página 7: Los Obsequios ---------- */
 
 function Gifts() {
   return (
@@ -253,7 +265,7 @@ function Gifts() {
       <div className="gifts-art">
         <SwingsCouple />
       </div>
-      <h2 className="script red gifts-title">{STORY.gifts.title}</h2>
+      <h2 className="px-title gold gifts-title">{STORY.gifts.title}</h2>
       <p className="gifts-text">{STORY.gifts.paragraph}</p>
     </div>
   );
@@ -261,12 +273,12 @@ function Gifts() {
 
 function buildGifts(tl, root) {
   const q = gsap.utils.selector(root);
-  drawSvg(tl, root.querySelector('.gifts-art .draw-svg'), 0.3);
+  revealPixels(tl, root.querySelector('.gifts-art .pixel-svg'), 0.3);
   textIn(tl, q('.gifts-title'), '>-0.2', { duration: 0.8 });
   textIn(tl, q('.gifts-text'), '>-0.2', { duration: 0.9 });
 }
 
-/* ---------- Página 7: La Confirmación ---------- */
+/* ---------- Página 8: La Confirmación ---------- */
 
 function Confirm({ onConfirm }) {
   return (
@@ -286,20 +298,18 @@ function Confirm({ onConfirm }) {
 function buildConfirm(tl, root) {
   const q = gsap.utils.selector(root);
   textIn(tl, q('.confirm-title'), 0.3, { duration: 0.8 });
-  drawSvg(tl, root.querySelector('.confirm-art .draw-svg'), '>-0.1', { duration: 1.3 });
+  revealPixels(tl, root.querySelector('.confirm-art .pixel-svg'), '>-0.1', { duration: 1.3 });
   textIn(tl, q('.confirm-cta'), '>', { duration: 0.6 });
 }
 
-/* ---------- Página 8: El Cierre ---------- */
+/* ---------- Página 9: El Cierre ---------- */
 
 function Closing() {
   const [photoFailed, setPhotoFailed] = useState(false);
   const { closing } = STORY;
   return (
     <div className="pg pg-closing">
-      <h2 className="script red closing-title">
-        <CoupleName />
-      </h2>
+      <h2 className="px-title gold closing-title">{STORY.couple}</h2>
       <figure className="polaroid">
         <div className="polaroid-photo">
           {photoFailed ? (
@@ -332,11 +342,12 @@ function buildClosing(tl, root, api) {
   textIn(tl, q('.closing-end'), '>+0.2', { duration: 1 });
 }
 
-/** Las 8 páginas del libro, en orden. `hearts` = corazones flotando en bucle en esa página. */
+/** Las 9 páginas del libro, en orden. `hearts` = corazones flotando en bucle en esa página. */
 export const PAGES = [
   { id: 'portada', label: 'La portada', Component: Cover, build: buildCover, hearts: true },
   { id: 'inicio', label: 'El inicio', Component: Beginning, build: buildBeginning },
   { id: 'decision', label: 'La decisión', Component: Decision, build: buildDecision },
+  { id: 'propuesta', label: 'La propuesta', Component: Proposal, build: buildProposal },
   { id: 'fecha', label: 'La fecha', Component: DatePage, build: buildDate },
   { id: 'escenario', label: 'El escenario', Component: Venue, build: buildVenue },
   { id: 'obsequios', label: 'Los obsequios', Component: Gifts, build: buildGifts },

@@ -1,430 +1,379 @@
 /*
- * Ilustraciones line-art del cuento. Cada una es un <svg class="draw-svg"> inline para que GSAP
- * anime el trazo de sus elementos (SDD 4.A).
+ * Ilustraciones del cuento en pixel art. Cada escena se compone con los sprites de `pixel.js`
+ * y se dibuja como <svg class="pixel-svg"> con una fila de píxeles por <g class="px-row">,
+ * que es lo que anima `revealPixels` (aparecen fila por fila, como una pantalla que carga).
  *
- * Para reemplazar un dibujo por el tuyo: conserva la clase "draw-svg" en el <svg> y usa
- * trazos sin relleno. Los rellenos que deben aparecer al final (mejillas, moños, flores)
- * llevan la clase "fill-reveal" más un color: fill-red, fill-pink, fill-dark o fill-gold.
+ * Las capas con nombre llevan animaciones en bucle definidas en story.css:
+ *   float   — sube y baja un píxel (corazones, notas)
+ *   bob     — rebote de los personajes
+ *   blink   — párpados que se cierran de vez en cuando (combinar con "bob" si el personaje rebota)
+ *   twinkle — destellos que parpadean
+ *   run-a / run-b — los dos cuadros de la carrera
+ *   wobble  — la esfera de la propuesta se sacude
+ *
+ * Para cambiar un dibujo, edita los sprites en `pixel.js` o las coordenadas de su escena aquí.
  */
+import { SPRITES as SP, scene } from './pixel.js';
 
-const DrawSvg = ({ viewBox, label, className = '', children }) => (
-  <svg
-    className={`draw-svg ${className}`}
-    viewBox={viewBox}
-    {...(label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true })}
-  >
-    {children}
-  </svg>
-);
-
-/* ---------- Piezas reutilizables ---------- */
-
-function Face({ cx, cy, s = 1 }) {
+function PixelArt({ art, label, className = '' }) {
   return (
-    <>
-      <circle className="fill-reveal fill-pink" cx={cx - 8 * s} cy={cy + 4 * s} r={2.6 * s} />
-      <circle className="fill-reveal fill-pink" cx={cx + 8 * s} cy={cy + 4 * s} r={2.6 * s} />
-      <path d={`M${cx - 6 * s} ${cy} q${2 * s} ${-2.6 * s} ${4 * s} 0`} />
-      <path d={`M${cx + 2 * s} ${cy} q${2 * s} ${-2.6 * s} ${4 * s} 0`} />
-      <path d={`M${cx - 3 * s} ${cy + 5 * s} q${3 * s} ${3 * s} ${6 * s} 0`} />
-    </>
+    <svg
+      className={`pixel-svg ${className}`}
+      viewBox={`0 0 ${art.w} ${art.h}`}
+      shapeRendering="crispEdges"
+      {...(label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true })}
+    >
+      {art.layers.map((layer) => {
+        const rows = layer.rows.map(({ y, runs }) => (
+          <g key={y} className="px-row" data-y={y}>
+            {runs.map((run) => (
+              <rect key={run.x} x={run.x} y={y} width={run.w} height={1} fill={run.fill} />
+            ))}
+          </g>
+        ));
+        return layer.name ? (
+          <g key={layer.name} className={layer.name}>
+            {rows}
+          </g>
+        ) : (
+          <g key="base">{rows}</g>
+        );
+      })}
+    </svg>
   );
 }
 
-/** Cara de perfil mirando a la derecha (dir=1) o a la izquierda (dir=-1). */
-function ProfileFace({ cx, cy, dir = 1 }) {
-  return (
-    <>
-      <circle className="fill-reveal fill-pink" cx={cx + 5 * dir} cy={cy + 5} r="2.6" />
-      <path d={`M${cx + 4 * dir} ${cy - 1} q${2 * dir} -2.6 ${4 * dir} 0`} />
-      <path d={`M${cx + 7 * dir} ${cy + 6} q${2 * dir} 1.5 ${4 * dir} -1`} />
-    </>
-  );
-}
+/* ---------- Página 1: portada (también es el respaldo de la foto final) ---------- */
 
-function hisHair(cx, cy, r) {
-  return `M${cx - r + 1} ${cy - 4} C${cx - r} ${cy - r - 7} ${cx + r} ${cy - r - 7} ${cx + r - 1} ${cy - 4} C${cx + r - 5} ${cy - r + 2} ${cx - 3} ${cy - r + 6} ${cx - r + 1} ${cy - 4} Z`;
-}
-
-function HimHead({ cx, cy, r = 13, profile = 0, s = 1 }) {
-  return (
-    <g>
-      <path className="fill-reveal fill-dark" d={hisHair(cx, cy, r)} />
-      <circle cx={cx} cy={cy} r={r} />
-      <path d={hisHair(cx, cy, r)} />
-      {profile ? <ProfileFace cx={cx} cy={cy} dir={profile} /> : <Face cx={cx} cy={cy} s={s} />}
-    </g>
-  );
-}
-
-function HerHead({ cx, cy, r = 13, profile = 0, s = 1, bow = false }) {
-  return (
-    <g>
-      <path
-        d={`M${cx - 1} ${cy - r - 4} C${cx - r - 12} ${cy - r - 4} ${cx - r - 7} ${cy + r + 2} ${cx - r - 6} ${cy + r + 10}`}
-      />
-      <path
-        d={`M${cx - 1} ${cy - r - 4} C${cx + r + 12} ${cy - r - 4} ${cx + r + 7} ${cy + r + 2} ${cx + r + 6} ${cy + r + 10}`}
-      />
-      <circle cx={cx} cy={cy} r={r} />
-      <path
-        d={`M${cx - r + 1} ${cy - 3} C${cx - r + 3} ${cy - r} ${cx - 4} ${cy - r - 1} ${cx + 2} ${cy - r + 1} C${cx + 6} ${cy - r + 5} ${cx + r - 1} ${cy - r + 4} ${cx + r - 1} ${cy - 3}`}
-      />
-      {profile ? <ProfileFace cx={cx} cy={cy} dir={profile} /> : <Face cx={cx} cy={cy} s={s} />}
-      {bow && <Bow x={cx + r * 0.7} y={cy - r * 0.9} />}
-    </g>
-  );
-}
-
-function Bow({ x, y, s = 1 }) {
-  const left = `M${x} ${y} l${-7 * s} ${-5 * s} l0 ${10 * s} Z`;
-  const right = `M${x} ${y} l${7 * s} ${-5 * s} l0 ${10 * s} Z`;
-  return (
-    <g>
-      <path className="fill-reveal fill-red" d={left} />
-      <path className="fill-reveal fill-red" d={right} />
-      <path className="accent" d={left} />
-      <path className="accent" d={right} />
-    </g>
-  );
-}
-
-const HEART_PATH = 'M0 -2 C0 -6 -7 -6 -7 -1 C-7 3 -2 6 0 9 C2 6 7 3 7 -1 C7 -6 0 -6 0 -2 Z';
-
-function Heart({ x, y, s = 1 }) {
-  return (
-    <g transform={`translate(${x} ${y}) scale(${s})`} style={{ strokeWidth: 2 / s }}>
-      <path className="fill-reveal fill-red" d={HEART_PATH} />
-      <path className="accent" d={HEART_PATH} />
-    </g>
-  );
-}
-
-/* ---------- Página 1: portada ---------- */
+const COVER = scene(40, 34, (p) => {
+  p.rect('G', 0, 31, 40, 1);
+  p.rect('D', 0, 32, 40, 2);
+  p.dot('G', [2, 30], [5, 30], [33, 30], [36, 30]);
+  p.dot('d', [6, 33], [17, 32], [29, 33], [38, 32]);
+  p.layer('float');
+  p.sprite(SP.heart, 17, 1);
+  p.sprite(SP.heartSmall, 8, 5);
+  p.sprite(SP.heartSmall, 28, 4);
+  p.layer('bob');
+  p.sprite(SP.groom, 8, 12);
+  p.sprite(SP.bride, 19, 13);
+  p.sprite(SP.bouquet, 24, 21);
+  p.layer('bob blink');
+  p.dot('S', [11, 15], [16, 15], [24, 16], [27, 16]);
+});
 
 export function CoverCouple({ className }) {
-  return (
-    <DrawSvg viewBox="0 0 200 170" label="Pareja abrazada con un ramo" className={className}>
-      <Heart x={98} y={14} s={1} />
-      <Heart x={128} y={24} s={0.7} />
-      <Heart x={70} y={22} s={0.6} />
-      {/* Él */}
-      <HimHead cx={80} cy={46} />
-      <path d="M77 59 v8 M83 59 v8" />
-      <path d="M60 152 C58 118 60 86 70 72 Q80 64 92 70 C96 90 98 120 100 152" />
-      <path d="M74 70 L80 84 L86 72" />
-      {/* Ella */}
-      <HerHead cx={116} cy={54} />
-      <path d="M113 67 v6 M119 67 v6" />
-      <path d="M104 78 Q116 71 130 77" />
-      <path d="M106 78 C106 100 106 124 103 152 M130 77 C134 100 140 124 150 152" />
-      <path d="M103 152 Q126 158 150 152" />
-      {/* Brazos: él la rodea, ella lo rodea */}
-      <path d="M90 74 C104 82 122 84 134 79" />
-      <path d="M108 90 C96 98 84 98 70 92" />
-      {/* Ramo */}
-      <path d="M118 132 L112 114 M122 132 L121 110 M126 132 L130 114" />
-      <path className="accent" d="M113 126 q9 5 18 0" />
-      <path d="M106 116 q-7 -2 -9 5 M136 116 q7 -2 9 5" />
-      {[
-        [110, 108],
-        [121, 104],
-        [132, 108],
-        [116, 97],
-        [127, 97],
-      ].map(([cx, cy]) => (
-        <g key={`${cx}-${cy}`}>
-          <circle className="fill-reveal fill-red" cx={cx} cy={cy} r="5" />
-          <circle cx={cx} cy={cy} r="5" />
-        </g>
-      ))}
-      <path d="M28 160 Q100 155 176 160" />
-    </DrawSvg>
-  );
+  return <PixelArt art={COVER} label="Los novios abrazados con un ramo" className={className} />;
 }
 
 /* ---------- Página 2: viñetas ---------- */
 
+const COFFEE = scene(40, 26, (p) => {
+  p.sprite(SP.groom, 2, 8, { to: 13 });
+  p.sprite(SP.bride, 24, 9, { to: 12 });
+  p.sprite(SP.mug, 14, 17);
+  p.sprite(SP.mug, 22, 17, { flip: true });
+  p.rect('D', 0, 21, 40, 2);
+  p.rect('d', 3, 23, 2, 3);
+  p.rect('d', 35, 23, 2, 3);
+  p.layer('float');
+  p.sprite(SP.heart, 16, 1);
+  p.layer('twinkle');
+  p.dot('A', [15, 15], [16, 14], [15, 13], [24, 15], [23, 14], [24, 13]);
+  p.layer('blink');
+  p.dot('S', [5, 11], [10, 11], [29, 12], [32, 12]);
+});
+
 export function CoffeeScene() {
-  return (
-    <DrawSvg viewBox="0 0 160 110" label="Se conocen tomando café en el trabajo">
-      <Heart x={80} y={22} s={0.8} />
-      <HimHead cx={40} cy={34} />
-      <path d="M18 90 C18 68 28 56 40 56 C54 56 64 68 64 82" />
-      <HerHead cx={120} cy={34} />
-      <path d="M142 90 C142 68 132 56 120 56 C106 56 96 68 96 82" />
-      <path d="M62 78 L64 90 L76 90 L78 78 Z M78 81 q5 1 0 6" />
-      <path d="M84 78 L86 90 L98 90 L100 78 Z M84 81 q-5 1 0 6" />
-      <path className="accent" d="M70 72 q-3 -5 0 -10 q3 -5 0 -10 M92 72 q3 -5 0 -10 q-3 -5 0 -10" />
-      <path d="M6 90 L154 90 M14 90 L14 106 M146 90 L146 106" />
-    </DrawSvg>
-  );
+  return <PixelArt art={COFFEE} label="Se conocen tomando café en el trabajo" />;
 }
+
+const SELFIE = scene(40, 26, (p) => {
+  p.sprite(SP.groom, 6, 8, { to: 18 });
+  p.sprite(SP.bride, 16, 9, { to: 17 });
+  p.line('S', 27, 18, 31, 10);
+  p.line('S', 28, 18, 32, 10);
+  p.sprite(SP.phone, 30, 3);
+  p.dot('S', [31, 9], [32, 9]);
+  p.layer('float');
+  p.sprite(SP.heartSmall, 21, 2);
+  p.layer('twinkle');
+  p.dot('Y', [35, 2], [36, 1], [36, 6], [37, 6], [35, 9], [36, 10]);
+  p.layer('blink');
+  p.dot('S', [9, 11], [14, 11], [21, 12], [24, 12]);
+});
 
 export function SelfieScene() {
-  return (
-    <DrawSvg viewBox="0 0 160 110" label="Se toman una selfie">
-      <HimHead cx={62} cy={46} />
-      <HerHead cx={92} cy={52} />
-      <path d="M36 108 C36 84 46 70 62 68 C70 68 76 70 80 74" />
-      <path d="M76 108 C78 88 82 78 92 76 C108 76 118 88 120 108" />
-      <path d="M78 76 C98 68 112 54 120 40" />
-      <path d="M114 18 L130 22 L125 42 L109 38 Z" />
-      <circle cx="125" cy="26" r="1.5" />
-      <path className="accent" d="M138 14 l6 -4 M140 26 l8 0 M136 37 l6 4" />
-      <Heart x={100} y={22} s={0.6} />
-    </DrawSvg>
-  );
+  return <PixelArt art={SELFIE} label="Se toman una selfie" />;
 }
+
+const DOG = scene(42, 27, (p) => {
+  p.sprite(SP.groom, 1, 7);
+  p.sprite(SP.bride, 12, 8);
+  p.sprite(SP.dog, 26, 17);
+  p.rect('d', 23, 17, 3, 1);
+  p.dot('A', [23, 18], [25, 18]);
+  p.rect('G', 0, 26, 42, 1);
+  p.layer('float');
+  p.sprite(SP.heartSmall, 12, 1);
+  p.layer('wag');
+  p.sprite(SP.tail, 38, 18);
+});
 
 export function DogScene() {
-  return (
-    <DrawSvg viewBox="0 0 160 110" label="Ella peina al perrito mientras él los mira">
-      <Heart x={56} y={16} s={0.6} />
-      <HimHead cx={30} cy={32} />
-      <path d="M10 108 C10 76 18 52 30 52 C42 52 50 76 50 108" />
-      <HerHead cx={74} cy={50} s={0.9} />
-      <path d="M56 108 C56 86 62 70 74 70 C86 70 92 80 96 92" />
-      <path d="M90 82 C98 80 104 76 110 70" />
-      <path d="M108 64 L120 60 L122 66 L110 70 Z" />
-      <path d="M112 72 l-1 3 M116 71 l-1 3 M120 69 l-1 3" />
-      {/* Perro */}
-      <ellipse cx="126" cy="90" rx="18" ry="11" />
-      <circle cx="146" cy="74" r="9" />
-      <path d="M140 67 C133 70 133 80 138 82" />
-      <circle cx="148" cy="71" r="0.9" />
-      <circle className="fill-reveal fill-dark" cx="154" cy="76" r="1.8" />
-      <path className="fill-reveal fill-pink" d="M148 80 q2 5 4 0 Z" />
-      <path d="M114 99 v9 M120 100 v8 M132 100 v8 M138 98 v10" />
-      <g className="wag">
-        <path d="M108 86 q-8 -6 -6 -14" />
-      </g>
-    </DrawSvg>
-  );
+  return <PixelArt art={DOG} label="Ella peina al perrito mientras él los mira" />;
 }
 
+const KIDS = scene(46, 27, (p) => {
+  p.sprite(SP.groom, 1, 7);
+  p.sprite(SP.bride, 32, 8);
+  p.line('S', 11, 19, 13, 21);
+  p.line('S', 33, 20, 35, 18);
+  p.rect('G', 0, 26, 46, 1);
+  p.layer('float');
+  p.sprite(SP.heart, 19, 0);
+  // Los niños dan saltitos
+  p.layer('bob');
+  p.sprite(SP.alex, 14, 14);
+  p.sprite(SP.matias, 24, 14);
+  p.dot('k', [23, 21]);
+});
+
 export function KidsScene() {
-  return (
-    <DrawSvg viewBox="0 0 160 110" label="La familia con Alex y Matias">
-      <Heart x={80} y={20} s={0.7} />
-      <HimHead cx={26} cy={30} r={12} />
-      <path d="M12 108 C12 76 16 52 26 50 C36 52 40 76 40 108" />
-      <HerHead cx={134} cy={30} r={12} />
-      <path d="M122 54 Q134 48 146 54 C150 72 154 92 158 108 L110 108 C114 92 118 72 122 54 Z" />
-      {/* Alex */}
-      <circle cx="62" cy="62" r="9" />
-      <path d="M54 58 l3 -6 l3 4 l3 -6 l3 4 l3 -5 l2 6" />
-      <Face cx={62} cy={62} s={0.65} />
-      <path d="M52 108 C52 88 56 74 62 74 C68 74 72 88 72 108" />
-      {/* Matias */}
-      <circle cx="98" cy="64" r="9" />
-      <path className="fill-reveal fill-dark" d={hisHair(98, 64, 9)} />
-      <path d={hisHair(98, 64, 9)} />
-      <Face cx={98} cy={64} s={0.65} />
-      <path d="M88 108 C88 90 92 76 98 76 C104 76 108 90 108 108" />
-      {/* Manos tomadas */}
-      <path d="M38 76 Q46 84 54 82 M70 84 Q80 92 90 84 M106 84 Q114 86 120 78" />
-    </DrawSvg>
-  );
+  return <PixelArt art={KIDS} label="La familia con Alex y Matias" />;
 }
 
 /* ---------- Página 3 ---------- */
 
+const RUN = scene(56, 30, (p) => {
+  p.rect('G', 0, 25, 56, 1);
+  p.rect('D', 0, 26, 56, 4);
+  p.dot('d', [7, 27], [19, 28], [33, 27], [46, 28], [52, 26]);
+  p.layer('twinkle');
+  p.rect('A', 2, 10, 6, 1);
+  p.rect('A', 0, 14, 8, 1);
+  p.rect('A', 3, 18, 5, 1);
+  // Dos cuadros que se alternan: así corren de verdad.
+  p.layer('runners run-a');
+  p.sprite(SP.heartSmall, 24, 2);
+  p.sprite(SP.groomSide, 14, 9);
+  p.sprite(SP.brideSide, 28, 9);
+  p.line('S', 23, 18, 28, 18);
+  p.layer('runners run-b');
+  p.sprite(SP.heartSmall, 24, 1);
+  p.sprite(SP.groomSideB, 14, 8);
+  p.sprite(SP.brideSideB, 28, 8);
+  p.line('S', 23, 17, 28, 17);
+});
+
 export function RunningCouple() {
-  return (
-    <DrawSvg viewBox="0 0 220 120" label="La pareja corre de la mano">
-      <path className="speed" d="M14 42 h24 M8 60 h30 M18 78 h20" />
-      <g className="runners">
-        <Heart x={106} y={16} s={0.6} />
-        {/* Él */}
-        <HimHead cx={78} cy={28} profile={1} />
-        <path d="M70 42 C80 42 82 58 76 72 L62 72 C58 58 62 44 70 42 Z" />
-        <path d="M66 48 L54 58 L48 50" />
-        <path d="M78 50 L104 58" />
-        <path d="M72 72 L84 90 L80 108 L86 108 M66 72 L54 88 L42 92" />
-        {/* Ella */}
-        <HerHead cx={140} cy={32} profile={1} bow />
-        <path d="M134 46 L144 46 L154 80 L122 80 Z" />
-        <path d="M134 52 L104 58" />
-        <path d="M143 52 L156 60 L164 52" />
-        <path d="M132 80 L124 96 L112 98 M146 80 L154 96 L152 110 L158 110" />
-      </g>
-      <path d="M6 112 H214" />
-    </DrawSvg>
-  );
+  return <PixelArt art={RUN} label="La pareja corre de la mano" />;
 }
+
+const LIFT = scene(48, 40, (p) => {
+  p.sprite(SP.groom, 18, 19);
+  p.rect('N', 18, 16, 1, 13);
+  p.rect('N', 29, 16, 1, 13);
+  p.dot('S', [18, 15], [29, 15]);
+  p.rect('G', 0, 38, 48, 1);
+  p.rect('D', 0, 39, 48, 1);
+  p.layer('float');
+  p.sprite(SP.heartSmall, 8, 6);
+  p.sprite(SP.heart, 36, 4);
+  // Ella sube y baja en sus brazos
+  p.layer('bob');
+  p.sprite(SP.bride, 17, 1, { to: 14 });
+  p.line('S', 19, 10, 16, 5);
+  p.line('S', 28, 10, 31, 5);
+});
 
 export function LiftCouple() {
+  return <PixelArt art={LIFT} label="Él la levanta en un abrazo eufórico" />;
+}
+
+/* ---------- Página nueva: la propuesta ---------- */
+
+const PROPOSAL = scene(48, 36, (p) => {
+  // Atardecer
+  p.rect('u', 0, 0, 48, 10);
+  p.rect('U', 0, 10, 48, 11);
+  p.rect('Z', 0, 21, 48, 11);
+  p.dot('u', [3, 10], [11, 10], [19, 10], [27, 10], [35, 10], [43, 10]);
+  p.dot('U', [7, 21], [15, 21], [23, 21], [31, 21], [39, 21], [47, 21]);
+  p.rect('G', 0, 32, 48, 1);
+  p.rect('D', 0, 33, 48, 3);
+  p.dot('d', [5, 34], [16, 35], [30, 34], [42, 35]);
+  // Él, de rodillas; ella, frente a él y sonrojada
+  p.sprite(SP.groomKneel, 10, 18);
+  p.dot('S', [19, 27], [20, 27]);
+  p.sprite(SP.brideSide, 29, 16, { flip: true });
+  p.dot('P', [32, 20]);
+  p.layer('float');
+  p.sprite(SP.heart, 21, 3);
+  p.layer('twinkle');
+  p.dot('W', [18, 15], [27, 16], [23, 13], [26, 13]);
+  p.layer('pop');
+  p.rect('Y', 35, 8, 1, 4);
+  p.dot('Y', [35, 13]);
+  p.layer('wobble');
+  p.sprite(SP.ringBall, 19, 17);
+  p.layer('blink');
+  p.dot('S', [16, 21], [33, 19]);
+  // Marco blanco de viñeta
+  p.layer('frame');
+  p.rect('W', 0, 0, 48, 1);
+  p.rect('W', 0, 35, 48, 1);
+  p.rect('W', 0, 0, 1, 36);
+  p.rect('W', 47, 0, 1, 36);
+});
+
+export function ProposalScene() {
   return (
-    <DrawSvg viewBox="0 0 220 140" label="Él la levanta en un abrazo eufórico">
-      <Heart x={168} y={36} s={0.7} />
-      <Heart x={62} y={28} s={0.6} />
-      {/* Ella, en lo alto */}
-      <HerHead cx={127} cy={18} r={11} s={0.85} />
-      <path d="M116 32 L132 33 L136 58 L104 56 Z" />
-      <path d="M118 36 L102 22 M130 36 L148 22" />
-      <path d="M106 54 L90 48 L82 38 M112 57 L96 60 L86 55" />
-      {/* Él */}
-      <HimHead cx={100} cy={74} />
-      <path d="M88 88 Q100 84 112 88 M88 88 C84 106 86 122 88 136 M112 88 C116 106 114 122 112 136" />
-      <path d="M90 90 C80 74 90 62 106 58 M112 90 C126 80 132 68 134 60" />
-      <path d="M40 136 H180" />
-    </DrawSvg>
+    <PixelArt
+      art={PROPOSAL}
+      label="Armando, de rodillas, le ofrece a Sabina una esfera roja y blanca con un anillo dentro"
+    />
   );
 }
 
-/* ---------- Página 4 ---------- */
+/* ---------- Página de la fecha ---------- */
 
-/** Cinturón de campeón (diseño propio, estilo doodle) en la cintura del novio de WeddingDance. */
-function ChampionBelt() {
-  const strap = 'M52 114 Q73 111 94 114 L94 124 Q73 121 52 124 Z';
-  const plate = 'M60 111 L66 106 L80 106 L86 111 L86 129 L80 134 L66 134 L60 129 Z';
-  const inner = 'M63.5 112.5 L68 109.5 L78 109.5 L82.5 112.5 L82.5 127.5 L78 130.5 L68 130.5 L63.5 127.5 Z';
-  const sidePlates = 'M51 113.5 h7 v11 h-7 Z M88 113.5 h7 v11 h-7 Z';
-  return (
-    <g>
-      <path className="fill-reveal fill-dark" d={strap} />
-      <path className="fill-reveal fill-gold" d={sidePlates} />
-      <path className="fill-reveal fill-gold" d={plate} />
-      <path d={strap} />
-      <path d={sidePlates} />
-      <path d={plate} />
-      <path d={inner} />
-      <circle cx="54.5" cy="119" r="1" />
-      <circle cx="91.5" cy="119" r="1" />
-      <Heart x={73} y={119} s={0.75} />
-    </g>
-  );
-}
+const DANCE = scene(40, 34, (p) => {
+  for (let x = 0; x < 40; x += 2) {
+    for (let y = 30; y < 34; y += 1) p.rect((x / 2 + y) % 2 ? 'Q' : 'q', x, y, 2, 1);
+  }
+  p.layer('float');
+  p.sprite(SP.heart, 16, 4);
+  p.sprite(SP.heartSmall, 4, 10);
+  p.sprite(SP.heartSmall, 32, 9);
+  p.layer('float float-late');
+  p.sprite(SP.note, 6, 2);
+  p.sprite(SP.note, 30, 1);
+  // De perfil, frente a frente, tomados de la mano y bailando al ritmo
+  p.layer('bob');
+  p.sprite(SP.groomSide, 8, 14);
+  p.sprite(SP.brideSide, 21, 14, { flip: true });
+  p.line('S', 17, 23, 22, 23);
+  // Cinturón de campeón con un corazón en la hebilla
+  p.rect('Y', 9, 24, 7, 1);
+  p.rect('y', 11, 23, 3, 3);
+  p.dot('R', [12, 24]);
+});
 
 export function WeddingDance() {
-  return (
-    <DrawSvg viewBox="0 0 200 180" label="Los novios bailando">
-      <Heart x={34} y={36} s={0.6} />
-      <Heart x={172} y={30} s={0.7} />
-      {/* Él con traje y corbata roja */}
-      <HimHead cx={72} cy={40} />
-      <path d="M54 66 Q72 58 90 66 M56 66 C52 100 54 130 58 142 M88 66 C92 100 92 130 88 142 M58 142 L88 142" />
-      <path d="M66 62 L73 84 L80 62" />
-      <path className="fill-reveal fill-red" d="M73 64 L70 68 L73 86 L76 68 Z" />
-      <path className="accent" d="M73 64 L70 68 L73 86 L76 68 Z" />
-      <circle cx="73" cy="100" r="1.2" />
-      <path d="M64 142 L62 172 M82 142 L84 172 M54 172 h9 M83 172 h9" />
-      <ChampionBelt />
-      <path d="M56 70 C46 92 48 108 54 118" />
-      {/* Manos unidas arriba */}
-      <path d="M88 70 C98 56 100 40 103 26 M118 74 C112 56 108 40 107 26" />
-      <circle cx="105" cy="23" r="3.5" />
-      {/* Ella con vestido y moño rojo */}
-      <path d="M118 36 C104 50 104 80 112 96" />
-      <HerHead cx={128} cy={46} bow />
-      <path d="M118 72 L140 72 L136 96 L122 96 Z" />
-      <path d="M122 96 C112 120 100 150 92 172 Q132 180 172 172 C162 150 146 120 136 96" />
-      <path d="M104 150 q6 4 12 0 M124 156 q6 4 12 0 M144 150 q6 4 12 0" />
-      <path d="M140 74 C150 86 152 98 146 106" />
-    </DrawSvg>
-  );
+  return <PixelArt art={DANCE} label="Los novios bailando; él con su cinturón de campeón" />;
 }
 
-/* ---------- Página 5 ---------- */
+/* ---------- Página del salón ---------- */
+
+const STAIRS = scene(38, 38, (p) => {
+  p.rect('D', 0, 33, 13, 5);
+  p.rect('D', 13, 27, 12, 11);
+  p.rect('D', 25, 21, 13, 17);
+  p.rect('F', 0, 33, 13, 1);
+  p.rect('F', 13, 27, 12, 1);
+  p.rect('F', 25, 21, 13, 1);
+  p.sprite(SP.groom, 13, 8);
+  p.sprite(SP.bride, 24, 3);
+  p.line('S', 23, 20, 27, 14);
+  p.layer('float');
+  p.sprite(SP.heartSmall, 17, 0);
+});
 
 export function StairsCouple() {
-  return (
-    <DrawSvg viewBox="0 0 150 140" label="La pareja en unas escaleras">
-      <Heart x={84} y={14} s={0.6} />
-      <path d="M2 134 H44 V110 H84 V86 H124 V62 H148" />
-      {/* Él, un escalón abajo */}
-      <HimHead cx={62} cy={50} r={11} s={0.85} />
-      <path d="M54 64 C50 80 52 96 54 100 L70 100 C72 96 74 80 70 64 Z" />
-      <path d="M57 100 L56 110 M67 100 L68 110" />
-      <path d="M70 70 C78 66 84 60 92 56" />
-      {/* Ella, un escalón arriba */}
-      <HerHead cx={104} cy={30} r={11} s={0.85} />
-      <path d="M98 44 L110 44 L118 78 L90 78 Z" />
-      <path d="M99 78 L99 86 M109 78 L109 86" />
-      <path d="M98 50 C96 54 94 56 92 56" />
-    </DrawSvg>
-  );
+  return <PixelArt art={STAIRS} label="La pareja en unas escaleras" />;
 }
+
+const TOAST = scene(48, 26, (p) => {
+  p.sprite(SP.groom, 3, 12, { to: 14 });
+  p.sprite(SP.bride, 31, 12, { to: 14 });
+  p.line('S', 14, 23, 21, 11);
+  p.line('S', 33, 21, 26, 11);
+  p.sprite(SP.glass, 20, 6);
+  p.sprite(SP.glass, 25, 6);
+  p.layer('twinkle');
+  p.dot('Y', [23, 1], [22, 2], [24, 2], [23, 3]);
+  p.dot('W', [19, 3], [27, 3], [23, 5]);
+  p.layer('blink');
+  p.dot('S', [6, 15], [11, 15], [36, 15], [39, 15]);
+});
 
 export function ToastCouple() {
-  return (
-    <DrawSvg viewBox="0 0 200 110" label="La pareja brindando">
-      <HimHead cx={40} cy={44} />
-      <path d="M14 108 C14 82 26 66 40 66 C54 66 62 74 66 82" />
-      <path d="M62 78 C76 70 86 60 92 50" />
-      <HerHead cx={160} cy={44} />
-      <path d="M186 108 C186 82 174 66 160 66 C146 66 138 74 134 82" />
-      <path d="M138 78 C124 70 114 60 108 50" />
-      <path className="fill-reveal fill-gold" d="M90.6 30 L97.4 30 L96 42 L92 42 Z" />
-      <path className="fill-reveal fill-gold" d="M102.6 30 L109.4 30 L108 42 L104 42 Z" />
-      <path d="M90 26 L98 26 L96 42 L92 42 Z M94 42 V52 M90 52 H98" />
-      <path d="M102 26 L110 26 L108 42 L104 42 Z M106 42 V52 M102 52 H110" />
-      <path className="accent" d="M93 17 l-5 -7 M100 14 V4 M107 17 l5 -7" />
-    </DrawSvg>
-  );
+  return <PixelArt art={TOAST} label="La pareja brindando" />;
 }
 
-/* ---------- Página 6 ---------- */
+/* ---------- Página de obsequios ---------- */
+
+const SWINGS = scene(44, 40, (p) => {
+  p.rect('A', 3, 2, 38, 1);
+  p.line('A', 4, 3, 0, 39);
+  p.line('A', 4, 3, 8, 39);
+  p.line('A', 39, 3, 35, 39);
+  p.line('A', 39, 3, 43, 39);
+  p.rect('G', 0, 39, 44, 1);
+  p.dot('G', [12, 38], [22, 38], [31, 38]);
+  p.layer('float');
+  p.sprite(SP.heartSmall, 20, 10);
+  // Columpio de él (de espaldas)
+  p.layer('swing swing-a');
+  p.rect('A', 10, 3, 1, 24);
+  p.rect('A', 19, 3, 1, 24);
+  p.sprite(SP.groomBack, 10, 15);
+  p.rect('d', 9, 27, 12, 1);
+  p.rect('N', 12, 28, 2, 3);
+  p.rect('N', 16, 28, 2, 3);
+  p.rect('K', 12, 31, 2, 1);
+  p.rect('K', 16, 31, 2, 1);
+  // Columpio de ella
+  p.layer('swing swing-b');
+  p.rect('A', 25, 3, 1, 24);
+  p.rect('A', 34, 3, 1, 24);
+  p.sprite(SP.brideBack, 24, 15);
+  p.rect('d', 23, 27, 14, 1);
+  p.rect('S', 27, 28, 2, 3);
+  p.rect('S', 31, 28, 2, 3);
+  p.rect('W', 27, 31, 2, 1);
+  p.rect('W', 31, 31, 2, 1);
+});
 
 export function SwingsCouple() {
-  return (
-    <DrawSvg viewBox="0 0 200 170" label="La pareja de espaldas en los columpios">
-      <path d="M14 16 H186 M24 16 L8 166 M24 16 L40 166 M176 16 L160 166 M176 16 L192 166" />
-      <Heart x={100} y={52} s={0.7} />
-      {/* Columpio de él */}
-      <g className="swing swing-a">
-        <path d="M58 16 V112 M82 16 V112 M52 112 H88" />
-        <circle cx="70" cy="72" r="12" />
-        <path className="fill-reveal fill-dark" d="M58 72 C58 56 82 56 82 72 C76 66 64 66 58 72 Z" />
-        <path d="M58 72 C58 56 82 56 82 72 C76 66 64 66 58 72 Z" />
-        <path d="M58 86 Q70 82 82 86 L84 112 L56 112 Z" />
-        <path d="M60 90 L58 98 M80 90 L82 98" />
-        <path d="M63 112 L63 134 M77 112 L77 134" />
-      </g>
-      {/* Columpio de ella */}
-      <g className="swing swing-b">
-        <path d="M118 16 V112 M142 16 V112 M112 112 H148" />
-        <path d="M118 66 C118 54 142 54 142 66 L145 94 L115 94 Z" />
-        <Bow x={130} y={58} />
-        <path d="M118 90 L142 90 L148 112 L112 112 Z" />
-        <path d="M120 94 L118 100 M140 94 L142 100" />
-        <path d="M124 112 L124 134 M136 112 L136 134" />
-      </g>
-      <path d="M46 162 q4 -6 8 0 M96 164 q4 -6 8 0 M146 162 q4 -6 8 0" />
-    </DrawSvg>
-  );
+  return <PixelArt art={SWINGS} label="La pareja de espaldas en los columpios" />;
 }
 
-/* ---------- Página 7 ---------- */
+/* ---------- Página de confirmación ---------- */
+
+const CANS = scene(56, 26, (p) => {
+  p.sprite(SP.groom, 2, 12, { to: 14 });
+  p.sprite(SP.bride, 40, 12, { to: 14 });
+  p.line('S', 13, 23, 15, 15);
+  p.line('S', 43, 22, 40, 15);
+  p.sprite(SP.can, 14, 11);
+  p.sprite(SP.can, 39, 11);
+  p.line('W', 17, 12, 28, 18);
+  p.line('W', 28, 18, 38, 12);
+  p.layer('float');
+  p.sprite(SP.heartSmall, 20, 3);
+  p.sprite(SP.heartSmall, 32, 3);
+  p.layer('float float-late');
+  p.sprite(SP.heartSmall, 26, 0);
+  p.layer('twinkle');
+  p.dot('Y', [18, 8], [19, 7], [20, 8]);
+  p.layer('blink');
+  p.dot('S', [5, 15], [10, 15], [45, 15], [48, 15]);
+});
 
 export function CanPhones() {
-  return (
-    <DrawSvg viewBox="0 0 220 120" label="La pareja hablando con teléfonos de lata">
-      <HimHead cx={40} cy={44} />
-      <path d="M14 116 C14 88 26 72 40 72 C54 72 62 82 64 94" />
-      <path d="M60 84 C66 72 64 60 58 54" />
-      <path d="M52 38 L60 36 L64 52 L56 54 Z" />
-      <HerHead cx={180} cy={44} bow />
-      <path d="M206 116 C206 88 194 72 180 72 C166 72 158 82 156 94" />
-      <path d="M160 84 C154 72 156 60 162 54" />
-      <path d="M168 38 L160 36 L156 52 L164 54 Z" />
-      <path d="M63 44 C100 84 120 84 157 44" />
-      <path className="accent" d="M72 28 q5 4 0 9 M78 24 q8 7 0 15" />
-      <Heart x={92} y={54} s={0.5} />
-      <Heart x={110} y={62} s={0.65} />
-      <Heart x={128} y={54} s={0.5} />
-    </DrawSvg>
-  );
+  return <PixelArt art={CANS} label="La pareja hablando con teléfonos de lata" />;
 }
 
 /* ---------- Decorativos ---------- */
 
+const DIVIDER = scene(40, 7, (p) => {
+  for (let x = 0; x < 15; x += 2) p.dot('Y', [x, 3], [39 - x, 3]);
+  p.layer('float');
+  p.sprite(SP.heart, 16, 0);
+});
+
 export function HeartDivider() {
-  return (
-    <DrawSvg viewBox="0 0 160 30" label="" className="heart-divider">
-      <path d="M8 15 H62 M98 15 H152" />
-      <Heart x={80} y={14} s={1.1} />
-    </DrawSvg>
-  );
+  return <PixelArt art={DIVIDER} className="heart-divider" />;
 }
