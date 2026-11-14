@@ -22,11 +22,6 @@ export const STORY = {
     top: 'quienes suman aún más felicidad a sus vidas.',
     lines: ['Este amor ha florecido', 'y decidieron unir', 'sus vidas...', '¡para siempre!'],
   },
-  // Su propuesta, como Kukui con Burnet: un anillo dentro de una esfera roja y blanca.
-  proposal: {
-    question: { name: 'Armando', text: '¿Me dejas atraparte?' },
-    answer: { name: 'Sabina', text: '¡Sí, acepto!' },
-  },
   date: {
     title: '¡¡Se van a Casar!!',
     date: '2 de enero 2027',

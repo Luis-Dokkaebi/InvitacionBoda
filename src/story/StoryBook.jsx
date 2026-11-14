@@ -247,7 +247,7 @@ export default function StoryBook({ onFinish, onOpen, music }) {
     }
   };
 
-  // CTA de la página de confirmación: abre la confirmación (ignora el "click" que llega al final de un swipe).
+  // CTA de la página 7: abre la confirmación (ignora el "click" que llega al final de un swipe).
   const confirm = () => {
     if (swiped.current) {
       swiped.current = false;

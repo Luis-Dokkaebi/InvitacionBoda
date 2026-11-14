@@ -1,25 +1,22 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 
-const RED = '255, 77, 109';
-
-// Corazón de 7×6 píxeles (el mismo sprite que usan los dibujos).
-const HEART = ['.RR.RR.', 'RRRRRRR', 'RRRRRRR', '.RRRRR.', '..RRR..', '...R...'];
+const RED = '217, 59, 59';
 
 function drawHeart(ctx, size) {
-  const px = Math.max(2, Math.round(size / 7));
-  const left = -3.5 * px;
-  const top = -3 * px;
-  HEART.forEach((row, y) => {
-    for (let x = 0; x < row.length; x += 1) {
-      if (row[x] === 'R') ctx.fillRect(left + x * px, top + y * px, px, px);
-    }
-  });
+  const s = size / 16;
+  ctx.beginPath();
+  ctx.moveTo(0, -2 * s);
+  ctx.bezierCurveTo(0, -6 * s, -7 * s, -6 * s, -7 * s, -1 * s);
+  ctx.bezierCurveTo(-7 * s, 3 * s, -2 * s, 6 * s, 0, 9 * s);
+  ctx.bezierCurveTo(2 * s, 6 * s, 7 * s, 3 * s, 7 * s, -1 * s);
+  ctx.bezierCurveTo(7 * s, -6 * s, 0, -6 * s, 0, -2 * s);
+  ctx.fill();
 }
 
 const rand = (min, max) => Math.random() * (max - min) + min;
 
 /**
- * Sistema de partículas de corazones pixelados (SDD 4.B). Suben en el eje Y con oscilación en X.
+ * Sistema de partículas de corazones (SDD 4.B). Suben en el eje Y con oscilación en X.
  * - start()/stop(): bucle ambiental desde la parte baja de la página.
  * - burst(x, y): lluvia de corazones desde un punto (coordenadas relativas al canvas).
  */
@@ -111,8 +108,8 @@ const HeartsCanvas = forwardRef(function HeartsCanvas(_props, ref) {
         }
         const alpha = Math.min(1, p.life / 20) * (1 - progress) * 0.85;
         ctx.save();
-        // Posiciones enteras y sin rotación para que los píxeles se vean nítidos.
-        ctx.translate(Math.round(p.x), Math.round(p.y));
+        ctx.translate(p.x, p.y);
+        ctx.rotate(Math.sin(p.phase + p.life * 0.04) * 0.25);
         ctx.fillStyle = `rgba(${RED}, ${alpha})`;
         drawHeart(ctx, p.size);
         ctx.restore();
