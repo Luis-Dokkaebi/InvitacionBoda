@@ -653,6 +653,13 @@
   line-height: 1.15;
 }
 
+/* "IMI" en mayúsculas no se lee en Great Vibes (parece "JMJ") */
+.story-stage .venue-city {
+  font-family: 'Dancing Script', var(--font-script);
+  font-weight: 600;
+  font-size: 13cqw;
+}
+
 .venue-paragraph {
   align-self: flex-start;
   font-size: 4.5cqw;

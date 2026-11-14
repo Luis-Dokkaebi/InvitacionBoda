@@ -28,7 +28,7 @@ export const STORY = {
   },
   venue: {
     name: 'Salón de fiestas L & A',
-    city: 'Chiná',
+    city: 'IMI',
     // Cada "\n" es un salto de línea.
     paragraph:
       'Queremos festejar nuestra boda\ncon algo sencillo, íntimo y\ncon la gente que de verdad amamos.\nSi te llegó esto,\nconsidérate VIP en nuestro corazón:\nEres alguien importante para nosotros.',
