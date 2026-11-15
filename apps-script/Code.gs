@@ -18,6 +18,9 @@ const HEADERS = [
   'P2: Llorar',
   'P3: Regalo',
   'P4: Atuendo',
+  'Invitación',
+  'Código',
+  'Lugares reservados',
 ];
 
 function doPost(e) {
@@ -51,6 +54,9 @@ function doPost(e) {
       safe_(answers[1]),
       safe_(answers[2]),
       safe_(answers[3]),
+      safe_(data.invitation),
+      safe_(data.code),
+      Number(data.seats) || '',
     ]);
   } finally {
     lock.releaseLock();
@@ -63,10 +69,10 @@ function getSheet_() {
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = spreadsheet.getSheetByName(SHEET_NAME);
   if (!sheet) sheet = spreadsheet.insertSheet(SHEET_NAME);
-  if (sheet.getLastRow() === 0) {
-    sheet.appendRow(HEADERS);
+  // También repone los encabezados si la hoja ya existía con menos columnas.
+  if (sheet.getLastRow() === 0 || sheet.getRange(1, HEADERS.length).getValue() === '') {
+    sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]).setFontWeight('bold');
     sheet.setFrozenRows(1);
-    sheet.getRange(1, 1, 1, HEADERS.length).setFontWeight('bold');
   }
   return sheet;
 }

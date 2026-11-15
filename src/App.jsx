@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { Mail, Heart, Gift, Gem, CheckCircle } from 'lucide-react';
+import { useGuest } from './guest.js';
 
 const questionsData = [
   {
@@ -63,9 +64,6 @@ const TOTAL_QUESTIONS = questionsData.length;
 const RSVP_STEP = TOTAL_QUESTIONS + 1;
 const FINAL_STEP = TOTAL_QUESTIONS + 2;
 
-// Máximo de acompañantes que un invitado puede registrar.
-const MAX_COMPANIONS = 3;
-
 // Desplazamiento máximo del botón "No" respecto a su posición original.
 const MAX_OFFSET = 150;
 // Margen que el botón respeta respecto al borde de la tarjeta.
@@ -78,6 +76,9 @@ const topTextClass = 'text-xs tracking-widest text-gray-500 uppercase mb-4';
 const randomBetween = (min, max) => Math.random() * (max - min) + min;
 
 export default function WeddingInvitation() {
+  // Los acompañantes posibles dependen de los lugares reservados en su link (?i=CODIGO).
+  const guest = useGuest();
+  const maxCompanions = guest.seats - 1;
   const [step, setStep] = useState(0);
   const [noButtonPosition, setNoButtonPosition] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
@@ -205,10 +206,11 @@ export default function WeddingInvitation() {
         body: JSON.stringify({
           name: rsvp.name.trim(),
           attending: rsvp.attending,
-          companions: rsvp.attending ? rsvp.companions : 0,
+          companions: rsvp.attending ? Math.min(rsvp.companions, maxCompanions) : 0,
           message: rsvp.message.trim(),
           answers,
           website: honeypot,
+          code: guest.code,
         }),
       });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -400,21 +402,30 @@ export default function WeddingInvitation() {
           </div>
         </fieldset>
 
-        {rsvp.attending && (
+        {rsvp.attending && maxCompanions > 0 && (
           <label className="flex flex-col gap-1 text-sm text-stone-600">
             ¿Cuántas personas van contigo?
             <select
               className={inputClass}
-              value={rsvp.companions}
+              value={Math.min(rsvp.companions, maxCompanions)}
               onChange={(event) => updateRsvp('companions', Number(event.target.value))}
             >
-              {Array.from({ length: MAX_COMPANIONS + 1 }, (_, count) => (
+              {Array.from({ length: maxCompanions + 1 }, (_, count) => (
                 <option key={count} value={count}>
                   {count === 0 ? 'Solo yo' : `${count} acompañante${count > 1 ? 's' : ''}`}
                 </option>
               ))}
             </select>
+            <span className="text-xs text-stone-400">
+              Tu invitación incluye {guest.seats} lugares (contándote a ti).
+            </span>
           </label>
+        )}
+
+        {rsvp.attending && maxCompanions === 0 && (
+          <p className="text-sm text-stone-500 text-center">
+            Tu invitación es personal: hemos reservado un lugar para ti 💌
+          </p>
         )}
 
         <label className="flex flex-col gap-1 text-sm text-stone-600">

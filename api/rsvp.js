@@ -1,11 +1,11 @@
 // Función serverless de Vercel: valida la confirmación y la reenvía a Google Sheets
 // (a través de un Web App de Apps Script). La URL y el secreto viven en variables
 // de entorno de Vercel, nunca en el navegador.
+import { PASES_SIN_CODIGO, findGuest } from './_invitados.js';
 
 const MAX_NAME = 80;
 const MAX_MESSAGE = 300;
 const MAX_ANSWER = 100;
-const MAX_COMPANIONS = 3;
 
 const cleanText = (value, max) =>
   typeof value === 'string' ? value.replace(/\s+/g, ' ').trim().slice(0, max) : '';
@@ -34,8 +34,11 @@ export default async function handler(req, res) {
     return res.status(400).json({ ok: false, error: 'Falta la asistencia' });
   }
 
+  // Nadie puede registrar más acompañantes que los lugares reservados en su link.
+  const guest = findGuest(body.code);
+  const seats = guest?.pases ?? PASES_SIN_CODIGO;
   const companions = body.attending
-    ? Math.min(Math.max(Number.parseInt(body.companions, 10) || 0, 0), MAX_COMPANIONS)
+    ? Math.min(Math.max(Number.parseInt(body.companions, 10) || 0, 0), seats - 1)
     : 0;
   const answers = Array.isArray(body.answers)
     ? body.answers.slice(0, 4).map((answer) => cleanText(answer, MAX_ANSWER))
@@ -48,6 +51,9 @@ export default async function handler(req, res) {
     companions,
     message: cleanText(body.message, MAX_MESSAGE),
     answers,
+    code: guest?.code ?? '',
+    invitation: guest?.nombre ?? 'Sin código',
+    seats,
   };
 
   try {

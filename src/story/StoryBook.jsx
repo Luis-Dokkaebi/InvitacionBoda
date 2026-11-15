@@ -3,6 +3,7 @@ import { BookOpen, ChevronLeft, ChevronRight } from 'lucide-react';
 import { gsap } from './anim.js';
 import { PAGES } from './pages.jsx';
 import HeartsCanvas from './HeartsCanvas.jsx';
+import { useGuest } from '../guest.js';
 import './story.css';
 
 const FLIP_DURATION = 0.9;
@@ -16,6 +17,7 @@ const TOTAL_PAGES = PAGES.length;
  * (o al saltar la historia), llama a `onFinish`. `music` es el botón para silenciar la música.
  */
 export default function StoryBook({ onFinish, onOpen, music }) {
+  const guest = useGuest();
   const [index, setIndex] = useState(0);
   const [hasNavigated, setHasNavigated] = useState(false);
   const [opened, setOpened] = useState(false);
@@ -350,6 +352,12 @@ export default function StoryBook({ onFinish, onOpen, music }) {
 
       {!opened && (
         <div className="story-gate" ref={gateRef}>
+          {guest.found && guest.name && (
+            <p className="gate-guest">
+              <span className="gate-guest-label">Esta invitación es para</span>
+              {guest.name}
+            </p>
+          )}
           <button type="button" className="gate-button" onClick={open}>
             <BookOpen aria-hidden="true" />
             Abrir invitación

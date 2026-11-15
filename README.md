@@ -54,4 +54,25 @@ npx vercel dev
 - Ilustraciones: `src/story/illustrations.jsx`. Para usar tus propios SVG conserva la clase `draw-svg` y usa trazos sin relleno; los rellenos que aparecen al final llevan `fill-reveal`.
 - Tiempos de animación de cada página: funciones `build*` en `src/story/pages.jsx`.
 
-El máximo de acompañantes se ajusta en `MAX_COMPANIONS` (`src/App.jsx` y `api/rsvp.js`).
+- Aviso de bebidas (página 5, bajo el brindis): `venue.drinks` en `src/story/content.js`.
+
+## Invitaciones personales con lugares reservados
+
+Cada invitado recibe su propio link con un código, y la invitación solo le permite confirmar los lugares que le reservaron.
+
+1. Edita la lista en `api/_invitados.js`:
+   ```js
+   export const INVITADOS = {
+     PEREZ7K2Q: { nombre: 'Familia Pérez', pases: 4 }, // 4 lugares en total
+     LAURA9XM4: { nombre: 'Laura', pases: 2 },          // Laura + 1
+   };
+   ```
+   `pases` cuenta a la persona invitada. Usa códigos difíciles de adivinar (letras y números).
+2. Haz commit y vuelve a desplegar en Vercel.
+3. Manda a cada quien su link: `https://tu-dominio.vercel.app/?i=PEREZ7K2Q`.
+
+Con el link personal, la invitación saluda por su nombre ("Esta invitación es para Familia Pérez"), la página de confirmación dice "Hemos reservado 4 lugares en tu honor · Pase personal e intransferible" y el formulario solo ofrece hasta 3 acompañantes. El servidor vuelve a revisar el límite, así que no se puede saltar editando la página.
+
+Quien abra la invitación sin código (o con uno que no existe) solo puede confirmarse a sí mismo; cámbialo con `PASES_SIN_CODIGO` en `api/_invitados.js` (y `DEFAULT_SEATS` en `src/guest.js`).
+
+La hoja **Confirmaciones** agrega las columnas *Invitación*, *Código* y *Lugares reservados*. Después de actualizar `apps-script/Code.gs`, publica una versión nueva (**Implementar > Gestionar implementaciones > Editar > Versión: nueva**).

@@ -34,6 +34,8 @@ export const STORY = {
       'Queremos festejar nuestra boda\ncon algo sencillo, íntimo y\ncon la gente que de verdad amamos.\nSi te llegó esto,\nconsidérate VIP en nuestro corazón:\nEres alguien importante para nosotros.',
     dressCode: '¿Qué me pongo?\nLo que quieras, excepto traje.\nAquí venimos a disfrutar.',
     time: '2:00 pm',
+    drinks:
+      'Nosotros no daremos bebidas alcohólicas,\npero si quieres brindar con algo más,\n¡trae lo tuyo con toda confianza! 🥂',
   },
   gifts: {
     title: 'Obsequios',
@@ -43,6 +45,9 @@ export const STORY = {
   confirm: {
     title: 'Confirma tu Asistencia',
     cta: 'Toca aquí para confirmar',
+    // Solo aparece con un link personal (?i=CODIGO); ver api/_invitados.js.
+    seats: (n) => `Hemos reservado ${n === 1 ? 'un lugar' : `${n} lugares`}\nen tu honor`,
+    seatsNote: 'Pase personal e intransferible',
   },
   closing: {
     ending: 'Continuará...',

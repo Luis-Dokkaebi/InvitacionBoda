@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
 import StoryBook from './story/StoryBook.jsx';
 import WeddingInvitation from './App.jsx';
+import { GuestProvider, useGuestLoader } from './guest.js';
 
 const MUSIC_SRC = `${import.meta.env.BASE_URL}musica.m4a`;
 const MUSIC_VOLUME = 0.7;
@@ -92,9 +93,10 @@ export function MusicToggle({ playing, onToggle, className = '' }) {
 export default function Root() {
   const [showStory, setShowStory] = useState(true);
   const music = useBackgroundMusic();
+  const guest = useGuestLoader();
 
   return (
-    <>
+    <GuestProvider value={guest}>
       {music.audioElement}
       {showStory ? (
         <StoryBook
@@ -115,6 +117,6 @@ export default function Root() {
           />
         </>
       )}
-    </>
+    </GuestProvider>
   );
 }

@@ -1,5 +1,6 @@
 import { useId, useState } from 'react';
 import { STORY } from './content.js';
+import { useGuest } from '../guest.js';
 import { gsap, drawSvg, handwrite, textIn, typewrite } from './anim.js';
 import {
   CanPhones,
@@ -232,6 +233,7 @@ function Venue() {
       <div className="venue-toast">
         <ToastCouple />
       </div>
+      <p className="venue-drinks">{venue.drinks}</p>
     </div>
   );
 }
@@ -244,6 +246,7 @@ function buildVenue(tl, root) {
   typewrite(tl, root.querySelector('.venue-dress'), '>-0.1');
   textIn(tl, q('.venue-time'), '>', { duration: 0.6 });
   drawSvg(tl, root.querySelector('.venue-toast .draw-svg'), '>-0.1', { duration: 1.3 });
+  textIn(tl, q('.venue-drinks'), '>-0.3', { duration: 0.9 });
 }
 
 /* ---------- Página 6: Los Obsequios ---------- */
@@ -312,10 +315,21 @@ function buildGifts(tl, root, api) {
 /* ---------- Página 7: La Confirmación ---------- */
 
 function Confirm({ onConfirm }) {
+  const guest = useGuest();
   return (
     // Toda la página es el CTA: al tocarla se abre el formulario de confirmación.
     <button type="button" className="pg pg-confirm" onClick={onConfirm}>
       <span className="confirm-title">{STORY.confirm.title}</span>
+      {/* Siempre está en el DOM (la animación se arma al montar); se ve al llegar el código. */}
+      <span className={`confirm-seats ${guest.found ? '' : 'is-empty'}`}>
+        {guest.found && (
+          <>
+            {guest.name && <span className="confirm-guest">{guest.name}</span>}
+            <span className="confirm-seats-count">{STORY.confirm.seats(guest.seats)}</span>
+            <span className="confirm-seats-note">{STORY.confirm.seatsNote}</span>
+          </>
+        )}
+      </span>
       <span className="confirm-art">
         <CanPhones />
       </span>
@@ -329,6 +343,7 @@ function Confirm({ onConfirm }) {
 function buildConfirm(tl, root) {
   const q = gsap.utils.selector(root);
   textIn(tl, q('.confirm-title'), 0.3, { duration: 0.8 });
+  textIn(tl, q('.confirm-seats'), '>-0.2', { duration: 0.8 });
   drawSvg(tl, root.querySelector('.confirm-art .draw-svg'), '>-0.1', { duration: 1.3 });
   textIn(tl, q('.confirm-cta'), '>', { duration: 0.6 });
 }

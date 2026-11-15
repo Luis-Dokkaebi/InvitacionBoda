@@ -323,6 +323,22 @@
   outline-offset: 4px;
 }
 
+.gate-guest {
+  margin-bottom: 1rem;
+  text-align: center;
+  font-family: var(--font-script);
+  font-size: 2.6rem;
+  line-height: 1.1;
+  color: var(--color-accent-red);
+}
+
+.gate-guest-label {
+  display: block;
+  font-family: var(--font-hand);
+  font-size: 1.1rem;
+  color: var(--color-text-main);
+}
+
 .gate-note {
   font-size: 16px;
   color: #6f6455;
@@ -711,6 +727,15 @@
   width: 100%;
 }
 
+.venue-drinks {
+  align-self: center;
+  font-size: 4.1cqw;
+  line-height: 1.25;
+  text-align: center;
+  white-space: pre-line;
+  transform: rotate(-1deg);
+}
+
 /* Página 6: obsequios, con lluvia de sobres que forma un corazón */
 .pg-gifts {
   justify-content: center;
@@ -790,6 +815,35 @@
   font-weight: 700;
   font-size: 10cqw;
   line-height: 1.1;
+}
+
+.confirm-seats {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1cqw;
+  line-height: 1.2;
+}
+
+.confirm-seats.is-empty {
+  display: none;
+}
+
+.confirm-guest {
+  font-family: var(--font-script);
+  font-size: 10cqw;
+  line-height: 1.15;
+  color: var(--color-accent-red);
+}
+
+.confirm-seats-count {
+  font-size: 5.4cqw;
+  white-space: pre-line;
+}
+
+.confirm-seats-note {
+  font-size: 3.8cqw;
+  opacity: 0.7;
 }
 
 .confirm-art {
