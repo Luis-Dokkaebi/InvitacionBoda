@@ -4,11 +4,9 @@ Invitación de boda interactiva (React + Tailwind CSS + Lucide) con confirmació
 
 ## Flujo
 
-0. **Libro de cuentos animado** (`src/story/`): 8 páginas con paso de página 3D, ilustraciones que se dibujan solas (GSAP + DrawSVG) y corazones flotando. Se avanza con swipe, flechas o teclado; "Saltar historia" va directo a la confirmación. La página 7 ("Confirma tu Asistencia") y el botón "Confirmar" de la última página abren el flujo de abajo.
-1. Pantalla inicial con el botón "No" que escapa.
-2. Cuestionario de 4 preguntas.
-3. Formulario: nombre, ¿asistirá? y mensaje opcional (invitación personal, sin acompañantes).
-4. Veredicto final (confirmada / no asistirá).
+1. **Libro de cuentos animado** (`src/story/`): 9 páginas con paso de página 3D, ilustraciones que se dibujan solas (GSAP + DrawSVG) y corazones flotando. Se avanza con swipe, flechas o teclado; "Saltar historia" va directo a la confirmación. La página 7 ("Toma nota") recuerda traer chelas y que no hay acompañantes extra. La página 8 ("Confirma tu Asistencia") y el botón "Confirmar" de la última página abren el formulario.
+2. Formulario: nombre, ¿asistirá? y mensaje opcional (invitación personal, sin acompañantes).
+3. Respuesta final (confirmada / no asistirá).
 
 Cada confirmación llega a `api/rsvp.js` (función serverless de Vercel), que la valida y la reenvía a un Web App de Google Apps Script (`apps-script/Code.gs`), el cual agrega una fila a la hoja **Confirmaciones**.
 

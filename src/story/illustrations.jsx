@@ -409,7 +409,7 @@ export function Envelope({ variant = 0 }) {
   );
 }
 
-/* ---------- Página 7 ---------- */
+/* ---------- Página 8 ---------- */
 
 export function CanPhones() {
   return (
