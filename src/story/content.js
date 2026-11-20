@@ -40,6 +40,11 @@ export const STORY = {
     paragraph:
       'Cambiamos las cajas de regalo\npor lluvia de sobres.\n¡Prometemos darle un excelente uso!',
   },
+  note: {
+    title: 'Antes de sacar tus mejores pasos, toma nota',
+    paragraph:
+      'Nosotros ponemos el banquete y los refrescos, pero tú tráete tus propias chelas para aguantar toda la fiesta. También recuerda que tu lugar es exclusivo y personal: cero acompañantes extra, o los ponemos a servir las mesas.',
+  },
   confirm: {
     title: 'Confirma tu Asistencia',
     cta: 'Toca aquí para confirmar',

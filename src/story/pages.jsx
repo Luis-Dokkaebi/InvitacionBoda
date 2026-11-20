@@ -309,7 +309,34 @@ function buildGifts(tl, root, api) {
   tl.call(() => api.burst(root.querySelector('.gifts-heart'), 16), [], '<');
 }
 
-/* ---------- Página 7: La Confirmación ---------- */
+/* ---------- Página 7: Toma Nota ---------- */
+
+function Note() {
+  return (
+    <div className="pg pg-note">
+      <div className="note-card">
+        <h2 className="note-title">{STORY.note.title}</h2>
+        <HeartDivider />
+        <p className="note-text">{STORY.note.paragraph}</p>
+      </div>
+    </div>
+  );
+}
+
+function buildNote(tl, root) {
+  const q = gsap.utils.selector(root);
+  tl.fromTo(
+    q('.note-card'),
+    { autoAlpha: 0, y: 40, rotation: -3 },
+    { autoAlpha: 1, y: 0, rotation: -1, duration: 0.9, ease: 'back.out(1.4)' },
+    0.3
+  );
+  textIn(tl, q('.note-title'), '>-0.2', { duration: 0.8 });
+  drawSvg(tl, root.querySelector('.heart-divider'), '>-0.2', { duration: 0.9 });
+  textIn(tl, q('.note-text'), '>-0.3', { duration: 0.9 });
+}
+
+/* ---------- Página 8: La Confirmación ---------- */
 
 function Confirm({ onConfirm }) {
   return (
@@ -333,7 +360,7 @@ function buildConfirm(tl, root) {
   textIn(tl, q('.confirm-cta'), '>', { duration: 0.6 });
 }
 
-/* ---------- Página 8: El Cierre ---------- */
+/* ---------- Página 9: El Cierre ---------- */
 
 function Closing() {
   const [photoFailed, setPhotoFailed] = useState(false);
@@ -375,7 +402,7 @@ function buildClosing(tl, root, api) {
   textIn(tl, q('.closing-end'), '>+0.2', { duration: 1 });
 }
 
-/** Las 8 páginas del libro, en orden. `hearts` = corazones flotando en bucle en esa página. */
+/** Las 9 páginas del libro, en orden. `hearts` = corazones flotando en bucle en esa página. */
 export const PAGES = [
   { id: 'portada', label: 'La portada', Component: Cover, build: buildCover, hearts: true },
   { id: 'inicio', label: 'El inicio', Component: Beginning, build: buildBeginning },
@@ -383,6 +410,7 @@ export const PAGES = [
   { id: 'fecha', label: 'La fecha', Component: DatePage, build: buildDate },
   { id: 'escenario', label: 'El escenario', Component: Venue, build: buildVenue },
   { id: 'obsequios', label: 'Los obsequios', Component: Gifts, build: buildGifts },
+  { id: 'nota', label: 'Toma nota', Component: Note, build: buildNote },
   { id: 'confirmacion', label: 'La confirmación', Component: Confirm, build: buildConfirm },
   { id: 'cierre', label: 'El cierre', Component: Closing, build: buildClosing, hearts: true },
 ];
