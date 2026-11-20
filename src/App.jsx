@@ -63,9 +63,6 @@ const TOTAL_QUESTIONS = questionsData.length;
 const RSVP_STEP = TOTAL_QUESTIONS + 1;
 const FINAL_STEP = TOTAL_QUESTIONS + 2;
 
-// Máximo de acompañantes que un invitado puede registrar.
-const MAX_COMPANIONS = 3;
-
 // Desplazamiento máximo del botón "No" respecto a su posición original.
 const MAX_OFFSET = 150;
 // Margen que el botón respeta respecto al borde de la tarjeta.
@@ -82,7 +79,7 @@ export default function WeddingInvitation() {
   const [noButtonPosition, setNoButtonPosition] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
   const [answers, setAnswers] = useState([]);
-  const [rsvp, setRsvp] = useState({ name: '', attending: null, companions: 0, message: '' });
+  const [rsvp, setRsvp] = useState({ name: '', attending: null, message: '' });
   const [honeypot, setHoneypot] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [sendError, setSendError] = useState('');
@@ -205,7 +202,6 @@ export default function WeddingInvitation() {
         body: JSON.stringify({
           name: rsvp.name.trim(),
           attending: rsvp.attending,
-          companions: rsvp.attending ? rsvp.companions : 0,
           message: rsvp.message.trim(),
           answers,
           website: honeypot,
@@ -399,23 +395,6 @@ export default function WeddingInvitation() {
             </button>
           </div>
         </fieldset>
-
-        {rsvp.attending && (
-          <label className="flex flex-col gap-1 text-sm text-stone-600">
-            ¿Cuántas personas van contigo?
-            <select
-              className={inputClass}
-              value={rsvp.companions}
-              onChange={(event) => updateRsvp('companions', Number(event.target.value))}
-            >
-              {Array.from({ length: MAX_COMPANIONS + 1 }, (_, count) => (
-                <option key={count} value={count}>
-                  {count === 0 ? 'Solo yo' : `${count} acompañante${count > 1 ? 's' : ''}`}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
 
         <label className="flex flex-col gap-1 text-sm text-stone-600">
           Mensaje para los novios (opcional)

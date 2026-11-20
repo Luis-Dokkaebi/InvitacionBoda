@@ -5,7 +5,6 @@
 const MAX_NAME = 80;
 const MAX_MESSAGE = 300;
 const MAX_ANSWER = 100;
-const MAX_COMPANIONS = 3;
 
 const cleanText = (value, max) =>
   typeof value === 'string' ? value.replace(/\s+/g, ' ').trim().slice(0, max) : '';
@@ -34,9 +33,8 @@ export default async function handler(req, res) {
     return res.status(400).json({ ok: false, error: 'Falta la asistencia' });
   }
 
-  const companions = body.attending
-    ? Math.min(Math.max(Number.parseInt(body.companions, 10) || 0, 0), MAX_COMPANIONS)
-    : 0;
+  // Invitación personal: no se registran acompañantes (la columna se conserva en la hoja).
+  const companions = 0;
   const answers = Array.isArray(body.answers)
     ? body.answers.slice(0, 4).map((answer) => cleanText(answer, MAX_ANSWER))
     : [];
