@@ -440,6 +440,17 @@ export default function WeddingInvitation() {
           onChange={(event) => setHoneypot(event.target.value)}
         />
 
+        <aside className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-stone-700">
+          <p className="mb-1 font-serif text-base text-rose-900">
+            Antes de sacar tus mejores pasos, toma nota
+          </p>
+          <p>
+            Nosotros ponemos el banquete y los refrescos, pero tú tráete tus propias chelas para
+            aguantar toda la fiesta. También recuerda que tu lugar es exclusivo y personal: cero
+            acompañantes extra, o los ponemos a servir las mesas.
+          </p>
+        </aside>
+
         {sendError && (
           <p className="text-sm text-rose-700 text-center" role="alert">
             {sendError}
